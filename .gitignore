@@ -1,2 +1,8 @@
-.gemini/
-gha-creds-*.json
+node_modules
+.DS_Store
+dist
+backend.log
+.env
+frontend/dist
+backend/node_modules
+frontend/node_modules
