@@ -1,0 +1,32 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Sun, Moon } from 'lucide-react';
+
+const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout }) => {
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="settings-container">
+      <div className="settings-card">
+        <h1 style={{marginBottom:'2rem', letterSpacing:'-1px'}}>Style & Account</h1>
+        <div className="settings-row">
+          <span>Theme Preference</span>
+          <button className="btn-icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
+        <div className="settings-row" style={{flexDirection:'column', alignItems:'flex-start', gap:'1.5rem'}}>
+          <span>System Accent Color</span>
+          <div className="color-grid">
+            {['#7c4dff', '#ff4081', '#00e676', '#ffea00', '#00b0ff', '#ffffff'].map(c => (
+              <div key={c} className={`color-circle ${accentColor === c ? 'active' : ''}`} style={{background:c}} onClick={() => setAccentColor(c)} />
+            ))}
+          </div>
+        </div>
+        <div style={{marginTop:'3rem'}}>
+          <button className="login-btn" style={{background:'rgba(255,68,68,0.1)', color:'#ff4444', border:'1px solid rgba(255,68,68,0.2)'}} onClick={handleLogout}>Sign Out</button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default Settings;

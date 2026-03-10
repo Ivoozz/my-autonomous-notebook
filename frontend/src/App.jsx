@@ -1,107 +1,15 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import Calendar from 'react-calendar'
-import 'react-calendar/dist/Calendar.css'
-import { format, isSameDay, parseISO } from 'date-fns'
+import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Search, Plus, Settings, Calendar as CalendarIcon, 
-  CheckSquare, LogOut, Sun, Moon, Pin, 
-  Trash2, Menu, X, ListChecks, FileText, Palette, Download
-} from 'lucide-react'
+import { FileText, Calendar as CalendarIcon, CheckSquare, Palette } from 'lucide-react'
+import Sidebar from './components/Sidebar'
+import Editor from './components/Editor'
+import Planner from './components/Planner'
+import Tasks from './components/Tasks'
+import Settings from './components/Settings'
+import Auth from './components/Auth'
 import './App.css'
 
 const API_URL = '/api'
-
-// --- HELPER COMPONENTS (Defined outside to prevent re-mounting bug) ---
-
-const SidebarItem = ({ note, activeNoteId, onClick }) => (
-  <motion.div 
-    layout
-    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-    className={`note-item ${activeNoteId === note.id ? 'active' : ''}`} 
-    onClick={() => onClick(note)}
-  >
-    <div className="note-title-small">
-      {note.isPinned && <Pin size={12} fill="var(--accent-color)" style={{marginRight:6}}/>}
-      {note.title || 'Untitled'}
-    </div>
-    <div className="note-meta">{format(parseISO(note.createdAt), 'MMM d')} • {note.category}</div>
-  </motion.div>
-)
-
-const EditorView = ({ activeNote, handleUpdateActiveNote, handleExport, handleDeleteNote, sidebarOpen, setSidebarOpen, isSaving, toggleMarkdownTodo }) => (
-  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-    <header className="editor-header">
-      <button className="menu-toggle" onClick={() => setSidebarOpen(true)}><Menu size={24}/></button>
-      {activeNote ? (
-        <>
-          <input 
-            className="title-input" 
-            value={activeNote.title} 
-            onChange={(e) => handleUpdateActiveNote({ title: e.target.value })} 
-          />
-          <input 
-            type="date" 
-            className="date-input-ghost" 
-            value={activeNote.date ? format(parseISO(activeNote.date), 'yyyy-MM-dd') : ''} 
-            onChange={(e) => handleUpdateActiveNote({ date: e.target.value ? new Date(e.target.value).toISOString() : null })} 
-          />
-          <button className="btn-icon" onClick={handleExport} title="Export .md"><Download size={18}/></button>
-          <button className="btn-icon" onClick={() => handleUpdateActiveNote({ isPinned: !activeNote.isPinned })}>
-            <Pin size={18} fill={activeNote.isPinned ? "var(--accent-color)" : "none"} />
-          </button>
-          <button className="btn-icon" onClick={() => handleDeleteNote(activeNote.id)}><Trash2 size={18}/></button>
-        </>
-      ) : <div className="title-input">Select a note</div>}
-    </header>
-    <div className="editor-body">
-      {activeNote ? (
-        <>
-          <div className="editor-pane">
-            <textarea 
-              className="markdown-editor" 
-              value={activeNote.content} 
-              onChange={(e) => handleUpdateActiveNote({ content: e.target.value })} 
-              placeholder="Type your thoughts..."
-            />
-          </div>
-          <div className="preview-pane">
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm]} 
-              components={{
-                input: ({ checked, ...props }) => props.type === 'checkbox' ? (
-                  <input 
-                    type="checkbox" 
-                    checked={checked} 
-                    readOnly 
-                    onClick={(e) => {
-                      const all = document.querySelectorAll('.preview-pane input[type="checkbox"]');
-                      const index = Array.from(all).indexOf(e.target);
-                      toggleMarkdownTodo(index);
-                    }} 
-                  />
-                ) : <input {...props} />
-              }}
-            >
-              {activeNote.content}
-            </ReactMarkdown>
-          </div>
-        </>
-      ) : <div style={{flex:1, display:'flex', justifyContent:'center', alignItems:'center', opacity:0.5}}><h2>Choose a note to start.</h2></div>}
-    </div>
-    {activeNote && (
-      <footer className="editor-footer">
-        <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-          <div className={`save-dot ${isSaving ? 'saving' : ''}`} />
-          {isSaving ? 'Saving...' : 'Synced'}
-        </div>
-        <div>{activeNote.content.length} characters</div>
-      </footer>
-    )}
-  </motion.div>
-)
 
 function App() {
   // --- States ---
@@ -109,23 +17,19 @@ function App() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [loading, setLoading] = useState(true)
-  
   const [notes, setNotes] = useState([])
   const [activeNote, setActiveNote] = useState(null)
   const [activeTab, setActiveTab] = useState('notes')
-  
   const [searchQuery, setSearchQuery] = useState('')
   const [theme, setTheme] = useState(localStorage.getItem('notebook_theme') || 'dark')
   const [accentColor, setAccentColor] = useState(localStorage.getItem('notebook_accent') || '#7c4dff')
   const [isSaving, setIsSaving] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  
-  const [showTodos, setShowTodos] = useState(false)
   const [todos, setTodos] = useState([])
   const [newTodoTask, setNewTodoTask] = useState('')
   const [calendarDate, setCalendarDate] = useState(new Date())
 
-  // --- Theme Sync ---
+  // --- Effects ---
   useEffect(() => {
     document.body.className = theme === 'light' ? 'light-mode' : ''
     document.documentElement.style.setProperty('--accent-color', accentColor)
@@ -139,37 +43,13 @@ function App() {
     } else setLoading(false)
   }, [token])
 
-  // --- Auto-save ---
   useEffect(() => {
     if (!activeNote || !activeNote._isDirty) return
-    const timer = setTimeout(() => saveNoteToServer(activeNote), 1000)
+    const timer = setTimeout(() => saveNoteToServer(activeNote), 1200)
     return () => clearTimeout(timer)
-  }, [activeNote?.content, activeNote?.title, activeNote?.date, activeNote?.isPinned])
+  }, [activeNote?.content, activeNote?.title])
 
-  const saveNoteToServer = async (note) => {
-    setIsSaving(true)
-    try {
-      const res = await fetch(`${API_URL}/notes/${note.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': token },
-        body: JSON.stringify({ 
-          title: note.title, 
-          content: note.content, 
-          category: note.category, 
-          isPinned: note.isPinned, 
-          date: note.date 
-        })
-      })
-      if (res.ok) {
-        const updated = await res.json()
-        setNotes(prev => prev.map(n => n.id === updated.id ? updated : n))
-        setActiveNote(prev => prev?.id === updated.id ? { ...updated, _isDirty: false } : prev)
-      }
-    } catch (err) { console.error(err) }
-    finally { setIsSaving(false) }
-  }
-
-  // --- Actions ---
+  // --- API Handlers ---
   const fetchNotes = async () => {
     const res = await fetch(`${API_URL}/notes`, { headers: { 'Authorization': token } })
     if (res.status === 401) return handleLogout()
@@ -193,8 +73,24 @@ function App() {
 
   const handleLogout = () => { setToken(''); localStorage.clear(); setNotes([]); setActiveNote(null); setActiveTab('notes'); }
 
+  const saveNoteToServer = async (note) => {
+    setIsSaving(true)
+    try {
+      const res = await fetch(`${API_URL}/notes/${note.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ title: note.title, content: note.content, category: note.category, isPinned: note.isPinned, date: note.date })
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        setNotes(prev => prev.map(n => n.id === updated.id ? updated : n))
+        setActiveNote(prev => prev?.id === updated.id ? { ...updated, _isDirty: false } : prev)
+      }
+    } finally { setIsSaving(false) }
+  }
+
   const handleCreateNote = async (initialDate = null) => {
-    const newNote = { title: 'New Note', content: '# New Note\n\n- [ ] Task 1', category: 'General', date: initialDate ? initialDate.toISOString() : null }
+    const newNote = { title: 'New Note', content: '# New Note', category: 'General', date: initialDate ? initialDate.toISOString() : null }
     const res = await fetch(`${API_URL}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newNote) })
     const data = await res.json()
     setNotes([data, ...notes]); setActiveNote(data); setActiveTab('notes'); setSidebarOpen(false);
@@ -204,23 +100,6 @@ function App() {
     setActiveNote(prev => ({ ...prev, ...updates, _isDirty: true }))
   }
 
-  const toggleMarkdownTodo = (index) => {
-    if (!activeNote) return
-    const lines = activeNote.content.split('\n')
-    let taskCount = 0
-    const newLines = lines.map(line => {
-      if (line.trim().startsWith('- [ ]') || line.trim().startsWith('- [x]')) {
-        if (taskCount === index) {
-          taskCount++
-          return line.includes('[ ]') ? line.replace('[ ]', '[x]') : line.replace('[x]', '[ ]')
-        }
-        taskCount++
-      }
-      return line
-    })
-    handleUpdateActiveNote({ content: newLines.join('\n') })
-  }
-
   const handleDeleteNote = async (id) => {
     if (!window.confirm('Delete this note?')) return
     await fetch(`${API_URL}/notes/${id}`, { method: 'DELETE', headers: { 'Authorization': token } })
@@ -228,25 +107,27 @@ function App() {
     setActiveNote(null)
   }
 
-  const filteredNotes = useMemo(() => {
-    return notes
-      .filter(n => !searchQuery || n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase()))
-      .sort((a, b) => (a.isPinned === b.isPinned ? new Date(b.createdAt) - new Date(a.createdAt) : a.isPinned ? -1 : 1))
-  }, [notes, searchQuery])
+  const toggleMarkdownTodo = (index) => {
+    const lines = activeNote.content.split('\n')
+    let count = 0
+    const newLines = lines.map(line => {
+      if (line.trim().startsWith('- [ ]') || line.trim().startsWith('- [x]')) {
+        if (count === index) { count++; return line.includes('[ ]') ? line.replace('[ ]', '[x]') : line.replace('[x]', '[ ]') }
+        count++
+      }
+      return line
+    })
+    handleUpdateActiveNote({ content: newLines.join('\n') })
+  }
 
-  if (!token) return (
-    <div className="login-container">
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="login-card">
-        <h1 style={{fontSize:'3rem', fontWeight:900, letterSpacing:'-2px'}}>Notebook</h1>
-        <p style={{color:'var(--text-dim)', marginBottom:'2.5rem'}}>Enter password to unlock.</p>
-        <form onSubmit={handleLogin}>
-          <input type="password" className="login-input" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
-          {loginError && <div style={{color:'#ff4444', marginBottom:'1rem'}}>{loginError}</div>}
-          <button type="submit" className="login-btn">Unlock Pro</button>
-        </form>
-      </motion.div>
-    </div>
-  )
+  const handleExport = () => {
+    const blob = new Blob([activeNote.content], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = `${activeNote.title}.md`; a.click();
+  }
+
+  if (!token) return <Auth password={password} setPassword={setPassword} handleLogin={handleLogin} loginError={loginError} />
+  if (loading) return <div className="app-container" style={{justifyContent:'center', alignItems:'center'}}>Loading...</div>
 
   return (
     <div className="app-container">
@@ -255,125 +136,55 @@ function App() {
         <div className="blob" style={{ bottom: '10%', right: '10%', opacity: 0.3 }} />
       </div>
 
-      <aside className={`sidebar ${sidebarOpen ? 'mobile-visible' : ''}`}>
-        <div className="sidebar-header" style={{display:'flex', justifyContent:'space-between'}}>
-          <h2>Notes</h2>
-          <button className="btn-icon" onClick={() => handleCreateNote()}><Plus size={20}/></button>
-        </div>
-        <div className="search-container">
-          <input type="text" className="search-input" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-        </div>
-        <div className="notes-list">
-          {filteredNotes.map(n => (
-            <SidebarItem 
-              key={n.id} 
-              note={n} 
-              activeNoteId={activeNote?.id} 
-              onClick={(note) => { setActiveNote(note); setActiveTab('notes'); setSidebarOpen(false); }} 
-            />
-          ))}
-        </div>
-        <div className="sidebar-footer" style={{padding:'1rem', borderTop:'1px solid var(--glass-border)', display:'flex', gap:'10px'}}>
-          <button className={`btn-icon ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}><CalendarIcon size={20}/></button>
-          <button className="btn-icon" onClick={() => setShowTodos(true)}><CheckSquare size={20}/></button>
-          <button className={`btn-icon ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Palette size={20}/></button>
-        </div>
-      </aside>
+      <Sidebar 
+        notes={notes} activeNoteId={activeNote?.id} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+        onNoteClick={(note) => { setActiveNote(note); setActiveTab('notes'); }}
+        onCreateNote={handleCreateNote} activeTab={activeTab} setActiveTab={setActiveTab}
+        sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
+      />
 
       <nav className="mobile-nav">
         <button className={`nav-item ${activeTab === 'notes' ? 'active' : ''}`} onClick={() => setActiveTab('notes')}><FileText size={24}/><span>Notes</span></button>
         <button className={`nav-item ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}><CalendarIcon size={24}/><span>Plan</span></button>
-        <button className="nav-item" onClick={() => setShowTodos(true)}><CheckSquare size={24}/><span>Tasks</span></button>
+        <button className={`nav-item ${activeTab === 'todos' ? 'active' : ''}`} onClick={() => setActiveTab('todos')}><CheckSquare size={24}/><span>Tasks</span></button>
         <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Palette size={24}/><span>Style</span></button>
       </nav>
 
       <main className="main-content">
         <AnimatePresence mode="wait">
           {activeTab === 'notes' && (
-            <EditorView 
-              key="editor"
-              activeNote={activeNote}
-              handleUpdateActiveNote={handleUpdateActiveNote}
-              handleExport={() => {
-                const blob = new Blob([activeNote.content], { type: 'text/markdown' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = `${activeNote.title || 'note'}.md`; a.click();
-              }}
-              handleDeleteNote={handleDeleteNote}
-              sidebarOpen={sidebarOpen}
-              setSidebarOpen={setSidebarOpen}
-              isSaving={isSaving}
-              toggleMarkdownTodo={toggleMarkdownTodo}
+            <Editor 
+              activeNote={activeNote} handleUpdateActiveNote={handleUpdateActiveNote}
+              handleExport={handleExport} handleDeleteNote={handleDeleteNote}
+              setSidebarOpen={setSidebarOpen} isSaving={isSaving} toggleMarkdownTodo={toggleMarkdownTodo}
             />
           )}
-
           {activeTab === 'calendar' && (
-            <motion.div key="calendar" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="calendar-view">
-              <div className="calendar-container">
-                <Calendar onChange={setCalendarDate} value={calendarDate} tileClassName={({ date, view }) => view === 'month' && notes.find(n => n.date && isSameDay(parseISO(n.date), date)) ? 'has-notes' : ''} />
-              </div>
-              <div style={{padding:'2rem', width:'100%', maxWidth:'600px'}}>
-                <h2 style={{marginBottom:'1rem'}}>{format(calendarDate, 'MMMM d, yyyy')}</h2>
-                {notes.filter(n => n.date && isSameDay(parseISO(n.date), calendarDate)).map(n => (
-                  <div key={n.id} className="note-item active" onClick={() => { setActiveNote(n); setActiveTab('notes'); }}>{n.title}</div>
-                ))}
-                <button className="login-btn" style={{marginTop:'1.5rem'}} onClick={() => handleCreateNote(calendarDate)}>+ New note for this day</button>
-              </div>
-            </motion.div>
+            <Planner 
+              calendarDate={calendarDate} setCalendarDate={setCalendarDate}
+              notes={notes} onNoteClick={(n) => { setActiveNote(n); setActiveTab('notes'); }}
+              onCreateNote={handleCreateNote}
+            />
           )}
-
+          {activeTab === 'todos' && (
+            <Tasks 
+              todos={todos} newTodoTask={newTodoTask} setNewTodoTask={setNewTodoTask}
+              handleAddTodo={(e) => {
+                e.preventDefault(); if(!newTodoTask.trim()) return;
+                fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ task: newTodoTask }) }).then(() => { fetchTodos(); setNewTodoTask(''); })
+              }}
+              handleToggleTodo={(t) => fetch(`${API_URL}/todos/${t.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ completed: !t.completed }) }).then(() => fetchTodos())}
+              handleDeleteTodo={(id) => fetch(`${API_URL}/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } }).then(() => fetchTodos())}
+            />
+          )}
           {activeTab === 'settings' && (
-            <motion.div key="settings" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="settings-container">
-              <div className="settings-card">
-                <h1>Style & Account</h1>
-                <div className="settings-row">
-                  <span>Theme Preference</span>
-                  <button className="btn-icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}</button>
-                </div>
-                <div className="settings-row" style={{flexDirection:'column', alignItems:'flex-start', gap:'1.5rem'}}>
-                  <span>Accent Color</span>
-                  <div className="color-grid">
-                    {['#7c4dff', '#ff4081', '#00e676', '#ffea00', '#00b0ff', '#ffffff'].map(c => (
-                      <div key={c} className={`color-circle ${accentColor === c ? 'active' : ''}`} style={{background:c}} onClick={() => setAccentColor(c)} />
-                    ))}
-                  </div>
-                </div>
-                <button className="login-btn" style={{marginTop:'3rem', background:'rgba(255,68,68,0.1)', color:'#ff4444', border:'1px solid rgba(255,68,68,0.2)'}} onClick={handleLogout}>Sign Out</button>
-              </div>
-            </motion.div>
+            <Settings 
+              theme={theme} setTheme={setTheme} accentColor={accentColor}
+              setAccentColor={setAccentColor} handleLogout={handleLogout}
+            />
           )}
         </AnimatePresence>
       </main>
-
-      <AnimatePresence>
-        {showTodos && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="modal-overlay" onClick={() => setShowTodos(false)}>
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="modal-content" onClick={e => e.stopPropagation()}>
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
-                <h2>Todo Manager</h2>
-                <button className="btn-icon" onClick={() => setShowTodos(false)}><X size={20}/></button>
-              </div>
-              <form style={{display:'flex', gap:'10px', marginBottom:'1.5rem'}} onSubmit={(e) => {
-                e.preventDefault(); if(!newTodoTask.trim()) return;
-                fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ task: newTodoTask }) }).then(() => { fetchTodos(); setNewTodoTask(''); })
-              }}>
-                <input className="search-input" placeholder="Quick task..." value={newTodoTask} onChange={e => setNewTodoTask(e.target.value)} />
-                <button type="submit" className="btn-icon active" style={{width:'80px', borderRadius:'16px'}}><Plus size={20}/></button>
-              </form>
-              <div style={{maxHeight:'400px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px'}}>
-                {todos.map(t => (
-                  <div key={t.id} className="note-item active" style={{display:'flex', alignItems:'center', gap:'12px', padding:'1rem'}}>
-                    <input type="checkbox" style={{width:20, height:20, accentColor:'var(--accent-color)'}} checked={t.completed} onChange={() => fetch(`${API_URL}/todos/${t.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ completed: !t.completed }) }).then(() => fetchTodos())} />
-                    <span style={{flex:1, textDecoration: t.completed ? 'line-through' : 'none', opacity: t.completed ? 0.5 : 1}}>{t.task}</span>
-                    <Trash2 size={18} color="#ff4444" style={{cursor:'pointer'}} onClick={() => fetch(`${API_URL}/todos/${t.id}`, { method: 'DELETE', headers: { 'Authorization': token } }).then(() => fetchTodos())} />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

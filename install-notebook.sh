@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Notebook Ultimate Installer [v1.5.1.rev1]
-# Unique ID: 773140500
+# Notebook Ultimate Installer [v1.6.0]
 # Optimized for Debian LXC, Nginx Proxy, and Systemd Autostart
 
 set -e
@@ -9,7 +8,7 @@ set -e
 # Clear screen for professional look
 clear
 echo "===================================================="
-echo "   Notebook Pro - Ultimate Installation [v1.5.1]"
+echo "   Notebook Pro - Ultimate Installation [v1.6.0]"
 echo "===================================================="
 
 # 1. System Check & Dependencies
