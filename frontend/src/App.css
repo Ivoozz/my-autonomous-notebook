@@ -79,7 +79,8 @@ body.light-mode .btn-icon.active svg {
   color: #ffffff !important;
 }
 
-body.light-mode .search-input {
+body.light-mode .search-input,
+body.light-mode .standard-input {
   background: #ffffff;
   color: #1a1a1a;
   border-color: rgba(0, 0, 0, 0.1);
@@ -197,6 +198,8 @@ body.light-mode .bg-blobs { mix-blend-mode: multiply; opacity: 0.15; }
   width: 60vw; height: 60vw;
   border-radius: 50%;
   animation: float 30s infinite ease-in-out alternate;
+  will-change: transform;
+  transform: translate3d(0,0,0);
 }
 
 /* ... existing blobs ... */
@@ -551,6 +554,9 @@ body.light-mode .react-calendar__navigation button:enabled:focus {
 @media (max-width: 768px) {
   .unified-pane { padding: 1.5rem 5%; }
   .preview-overlay { left: 5%; right: 5%; }
+}
+.color-circle {
+  width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.3s;
 }
 .color-circle:hover { transform: scale(1.15) translateY(-3px); }
 .color-circle.active { border-color: white; transform: scale(1.2); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
