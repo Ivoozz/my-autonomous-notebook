@@ -1,0 +1,7 @@
+{
+  "mode": "full-auto",
+  "side_effect_policy": "autonomous-with-guardrails",
+  "high_risk_requires_confirmation": true,
+  "updated_at": "2026-03-10T12:10:00Z",
+  "source": "omg:approval"
+}

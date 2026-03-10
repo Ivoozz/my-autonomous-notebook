@@ -33,12 +33,6 @@ function App() {
   const [todos, setTodos] = useState([])
   const [calendarDate, setCalendarDate] = useState(new Date())
 
-  // --- Keyboard Shortcut Ref ---
-  const keyboardRef = useRef({ activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer });
-  useEffect(() => {
-    keyboardRef.current = { activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer };
-  }, [activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer]);
-
   // --- Effects ---
   useEffect(() => {
     document.body.className = theme === 'light' ? 'light-mode' : ''
@@ -51,60 +45,14 @@ function App() {
 
   useEffect(() => {
     if (token) {
-      Promise.all([fetchNotes(), fetchTodos()]).then(() => setLoading(false))
+      Promise.all([fetchNotes(), fetchTodos()])
+        .then(() => setLoading(false))
+        .catch(err => {
+          console.error("Failed to fetch data:", err);
+          setLoading(false);
+        });
     } else setLoading(false)
   }, [token])
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      const { activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer } = keyboardRef.current;
-      const key = e.key.toLowerCase();
-      const isCmd = e.ctrlKey || e.metaKey;
-      const isAlt = e.altKey;
-      const target = e.target;
-      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
-
-      // 1. Tab switching (Always works)
-      if (isAlt && isCmd) {
-        const tabs = { '1': 'notes', '2': 'emails', '3': 'calendar', '4': 'todos', '5': 'settings' };
-        if (tabs[key]) {
-          e.preventDefault();
-          setActiveTab(tabs[key]);
-          return;
-        }
-      }
-
-      // 2. Global actions (Only if not in input, OR if specific Cmd shortcuts)
-      if (isCmd) {
-        if (key === 'n') {
-          e.preventDefault();
-          handleCreateNote();
-        } else if (key === 's') {
-          e.preventDefault();
-          if (activeNote) saveNoteToServer(activeNote);
-        } else if (key === 'p' && activeNote) {
-          e.preventDefault();
-          handleUpdateActiveNote({ isPinned: !activeNote.isPinned });
-        } else if (key === 'f') {
-          e.preventDefault();
-          const searchInput = document.querySelector('.search-input');
-          if (searchInput) {
-            searchInput.focus();
-            searchInput.select();
-          }
-        }
-      }
-
-      // 3. Delete note (Only if NOT in input and on notes tab)
-      if (e.key === 'Delete' && !isInput && activeNote && activeTab === 'notes') {
-        e.preventDefault();
-        handleDeleteNote(activeNote.id);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [token]);
 
   useEffect(() => {
     if (!activeNote || !activeNote._isDirty) return
@@ -227,6 +175,63 @@ function App() {
     };
     reader.readAsText(file);
   }
+
+  // --- Keyboard Shortcut Ref ---
+  const keyboardRef = useRef({ activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer });
+  useEffect(() => {
+    keyboardRef.current = { activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer };
+  }, [activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const { activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer } = keyboardRef.current;
+      const key = e.key.toLowerCase();
+      const isCmd = e.ctrlKey || e.metaKey;
+      const isAlt = e.altKey;
+      const target = e.target;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      // 1. Tab switching (Always works)
+      if (isAlt && isCmd) {
+        const tabs = { '1': 'notes', '2': 'emails', '3': 'calendar', '4': 'todos', '5': 'settings' };
+        if (tabs[key]) {
+          e.preventDefault();
+          setActiveTab(tabs[key]);
+          return;
+        }
+      }
+
+      // 2. Global actions (Only if not in input, OR if specific Cmd shortcuts)
+      if (isCmd) {
+        if (key === 'n') {
+          e.preventDefault();
+          handleCreateNote();
+        } else if (key === 's') {
+          e.preventDefault();
+          if (activeNote) saveNoteToServer(activeNote);
+        } else if (key === 'p' && activeNote) {
+          e.preventDefault();
+          handleUpdateActiveNote({ isPinned: !activeNote.isPinned });
+        } else if (key === 'f') {
+          e.preventDefault();
+          const searchInput = document.querySelector('.search-input');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          }
+        }
+      }
+
+      // 3. Delete note (Only if NOT in input and on notes tab)
+      if (e.key === 'Delete' && !isInput && activeNote && activeTab === 'notes') {
+        e.preventDefault();
+        handleDeleteNote(activeNote.id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [token]);
 
   if (!token) return <Auth password={password} setPassword={setPassword} handleLogin={handleLogin} loginError={loginError} />
   if (loading) return <div className="app-container" style={{justifyContent:'center', alignItems:'center'}}>Loading...</div>

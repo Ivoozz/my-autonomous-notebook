@@ -24,7 +24,11 @@ const Sidebar = ({
   };
 
   const filteredNotes = notes
-    .filter(n => !searchQuery || n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(n => {
+      const titleMatch = (n.title || '').toLowerCase().includes((searchQuery || '').toLowerCase());
+      const contentMatch = (n.content || '').toLowerCase().includes((searchQuery || '').toLowerCase());
+      return !searchQuery || titleMatch || contentMatch;
+    })
     .sort((a, b) => {
       if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
       if (sortMode === 'Title') return a.title.localeCompare(b.title);
