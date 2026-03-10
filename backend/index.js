@@ -5,10 +5,14 @@ const rateLimit = require('express-rate-limit');
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const CONFIG_FILE = path.join(__dirname, 'config.json');
 
 app.use(helmet());
 app.use(cors());
@@ -28,13 +32,33 @@ const authLimiter = rateLimit({
 
 app.use('/api/', apiLimiter);
 
-// --- Simple Auth ---
-const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'password123';
-const VALID_TOKEN = process.env.VALID_TOKEN || 'secret-token-123';
+// --- Config Management ---
+let config = {
+  hashedPassword: '',
+  validToken: process.env.VALID_TOKEN || 'secret-token-123'
+};
+
+const loadConfig = () => {
+  if (fs.existsSync(CONFIG_FILE)) {
+    const data = fs.readFileSync(CONFIG_FILE);
+    config = { ...config, ...JSON.parse(data) };
+  } else {
+    // Initial setup from .env or default
+    const plainPassword = process.env.AUTH_PASSWORD || 'password123';
+    config.hashedPassword = bcrypt.hashSync(plainPassword, 10);
+    saveConfig();
+  }
+};
+
+const saveConfig = () => {
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+};
+
+loadConfig();
 
 const authenticate = (req, res, next) => {
   const token = req.headers['authorization'];
-  if (token === VALID_TOKEN) {
+  if (token === config.validToken) {
     next();
   } else {
     res.status(401).json({ error: 'Unauthorized' });
@@ -43,10 +67,25 @@ const authenticate = (req, res, next) => {
 
 app.post('/api/login', authLimiter, (req, res) => {
   const { password } = req.body;
-  if (password === AUTH_PASSWORD) {
-    res.json({ token: VALID_TOKEN });
+  if (bcrypt.compareSync(password, config.hashedPassword)) {
+    res.json({ token: config.validToken });
   } else {
     res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
+app.post('/api/admin/change-password', authenticate, (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ error: 'Old and new passwords are required' });
+  }
+
+  if (bcrypt.compareSync(oldPassword, config.hashedPassword)) {
+    config.hashedPassword = bcrypt.hashSync(newPassword, 10);
+    saveConfig();
+    res.json({ message: 'Password changed successfully' });
+  } else {
+    res.status(400).json({ error: 'Incorrect current password' });
   }
 });
 

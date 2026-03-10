@@ -9,6 +9,9 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
     smtpHost: '', smtpPort: 465, smtpUser: '', smtpPass: '', smtpTls: true
   });
   const [saveStatus, setSaveStatus] = useState('');
+  
+  const [passwords, setPasswords] = useState({ old: '', new: '', confirm: '' });
+  const [pwdStatus, setPwdStatus] = useState('');
 
   useEffect(() => {
     fetch('/api/admin/settings', { headers: { 'Authorization': token } })
@@ -28,6 +31,30 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
     if (res.ok) setSaveStatus('Settings saved!');
     else setSaveStatus('Failed to save settings');
     setTimeout(() => setSaveStatus(''), 3000);
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwords.old || !passwords.new) return setPwdStatus('Please fill all fields');
+    if (passwords.new !== passwords.confirm) return setPwdStatus('New passwords do not match');
+    if (passwords.new.length < 6) return setPwdStatus('New password must be at least 6 characters');
+
+    setPwdStatus('Updating...');
+    try {
+      const res = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ oldPassword: passwords.old, newPassword: passwords.new })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPwdStatus('Password changed successfully! Please log in again.');
+        setTimeout(() => handleLogout(), 2000);
+      } else {
+        setPwdStatus(data.error || 'Failed to change password');
+      }
+    } catch (err) {
+      setPwdStatus('Error updating password');
+    }
   };
 
   return (
@@ -112,6 +139,45 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
              <FontAwesomeIcon icon={faSave} style={{marginRight:'8px'}} /> Save Settings
            </button>
            {saveStatus && <span style={{fontSize:'0.9rem', color: saveStatus.includes('Failed') ? '#ff4444' : 'var(--accent-color)'}}>{saveStatus}</span>}
+        </div>
+
+        <h2 style={{marginBottom:'1rem', marginTop:'1rem', fontSize:'1.2rem', letterSpacing:'-0.5px'}}>Security & Vault Password</h2>
+        <div className="glass-panel" style={{padding:'2rem', borderRadius:'var(--radius-md)', marginBottom:'2rem', border:'1px solid rgba(255, 68, 68, 0.2)'}}>
+          <p style={{fontSize:'0.9rem', color:'#ff4444', marginBottom:'1.5rem', fontWeight:600}}>
+            <FontAwesomeIcon icon={faLock} style={{marginRight:'8px'}} /> 
+            Warning: Changing your vault password will make existing entries in your Password Vault unreadable, as they are encrypted with your current password.
+          </p>
+          <div style={{display:'grid', gap:'15px', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', marginBottom:'1.5rem'}}>
+            <input 
+              type="password" 
+              className="search-input" 
+              placeholder="Current Vault Password" 
+              value={passwords.old} 
+              onChange={e => setPasswords({...passwords, old: e.target.value})} 
+            />
+            <input 
+              type="password" 
+              className="search-input" 
+              placeholder="New Vault Password" 
+              value={passwords.new} 
+              onChange={e => setPasswords({...passwords, new: e.target.value})} 
+            />
+            <input 
+              type="password" 
+              className="search-input" 
+              placeholder="Confirm New Password" 
+              value={passwords.confirm} 
+              onChange={e => setPasswords({...passwords, confirm: e.target.value})} 
+            />
+          </div>
+          <button 
+            className="login-btn" 
+            style={{width:'auto', padding:'0.8rem 2rem', background:'rgba(255, 68, 68, 0.1)', color:'#ff4444', border:'1px solid rgba(255, 68, 68, 0.3)'}}
+            onClick={handleChangePassword}
+          >
+            Update Vault Password
+          </button>
+          {pwdStatus && <p style={{marginTop:'1rem', fontSize:'0.9rem', color: pwdStatus.includes('successfully') ? 'var(--accent-color)' : '#ff4444'}}>{pwdStatus}</p>}
         </div>
 
         <h2 style={{marginBottom:'1rem', marginTop:'1rem', fontSize:'1.2rem', letterSpacing:'-0.5px'}}>Data & Backup</h2>
