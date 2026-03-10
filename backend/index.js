@@ -81,7 +81,7 @@ app.get('/api/notes', authenticate, (req, res) => {
 });
 
 app.post('/api/notes', authenticate, (req, res) => {
-  const { title, content, category, isPinned } = req.body;
+  const { title, content, category, isPinned, date } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
   const newNote = {
@@ -90,6 +90,7 @@ app.post('/api/notes', authenticate, (req, res) => {
     content: content || '',
     category: category || 'General',
     isPinned: isPinned || false,
+    date: date || null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -100,7 +101,7 @@ app.post('/api/notes', authenticate, (req, res) => {
 
 app.put('/api/notes/:id', authenticate, (req, res) => {
   const { id } = req.params;
-  const { title, content, category, isPinned } = req.body;
+  const { title, content, category, isPinned, date } = req.body;
   const noteIndex = notes.findIndex(n => n.id === parseInt(id));
 
   if (noteIndex === -1) return res.status(404).json({ error: 'Note not found' });
@@ -111,6 +112,7 @@ app.put('/api/notes/:id', authenticate, (req, res) => {
     content: content !== undefined ? content : notes[noteIndex].content,
     category: category || notes[noteIndex].category,
     isPinned: isPinned !== undefined ? isPinned : notes[noteIndex].isPinned,
+    date: date !== undefined ? date : notes[noteIndex].date,
     updatedAt: new Date().toISOString()
   };
 
