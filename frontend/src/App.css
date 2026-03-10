@@ -571,6 +571,7 @@ body.light-mode .btn-icon.active svg {
   .settings-container, .calendar-view { padding: 1.5rem; flex-direction: column; overflow-y: auto; }
   .calendar-view { gap: 1rem; }
   .settings-card, .calendar-container, .day-notes-pane { padding: 1.5rem; flex: none; width: 100%; height: auto; }
+  .view-container { padding: 1rem !important; }
 }
 
 @media (max-width: 480px) {

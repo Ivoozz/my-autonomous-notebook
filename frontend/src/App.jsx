@@ -246,7 +246,7 @@ function App() {
           <span>Tasks</span>
         </button>
         <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-          <FontAwesomeIcon icon={faPalette, faEnvelope} style={{fontSize:'1.4rem'}} />
+          <FontAwesomeIcon icon={faPalette} style={{fontSize:'1.4rem'}} />
           <span>Style</span>
         </button>
       </nav>
@@ -277,10 +277,13 @@ function App() {
               handleDeleteTodo={(id) => fetch(`${API_URL}/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } }).then(() => fetchTodos())}
             />
           )}
-                    {activeTab === 'emails' && (
-            <Emails token={token} handleAddTodo={(newTaskObj) => {
+          {activeTab === 'emails' && (
+            <Emails 
+              token={token} 
+              handleAddTodo={(newTaskObj) => {
                 fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newTaskObj) }).then(() => fetchTodos())
-              }} 
+              }}
+              onCreateNote={handleCreateNote}
             />
           )}
           {activeTab === 'settings' && (

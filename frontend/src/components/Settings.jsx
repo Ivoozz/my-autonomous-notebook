@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faMoon, faArrowRightFromBracket, faEye, faEyeSlash, faDownload, faUpload, faServer, faEnvelope, faKey, faUser, faSave } from '@fortawesome/free-solid-svg-icons';
 
-
 const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, bgBlobs, setBgBlobs, handleExportAll, handleImportAll, notebookTitle, setNotebookTitle, token }) => {
-  const [imapSettings, setImapSettings] = useState({
-    imapHost: '', imapPort: 993, imapUser: '', imapPass: '', imapTls: true
+  const [adminSettings, setAdminSettings] = useState({
+    imapHost: '', imapPort: 993, imapUser: '', imapPass: '', imapTls: true,
+    smtpHost: '', smtpPort: 465, smtpUser: '', smtpPass: '', smtpTls: true
   });
   const [saveStatus, setSaveStatus] = useState('');
 
@@ -14,16 +14,16 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
     fetch('/api/admin/settings', { headers: { 'Authorization': token } })
       .then(res => res.json())
       .then(data => {
-        if (data && !data.error) setImapSettings(data);
+        if (data && !data.error) setAdminSettings(prev => ({...prev, ...data}));
       });
   }, [token]);
 
-  const saveImapSettings = async () => {
+  const handleSaveSettings = async () => {
     setSaveStatus('Saving...');
     const res = await fetch('/api/admin/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': token },
-      body: JSON.stringify(imapSettings)
+      body: JSON.stringify(adminSettings)
     });
     if (res.ok) setSaveStatus('Settings saved!');
     else setSaveStatus('Failed to save settings');
@@ -34,6 +34,7 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
     <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="settings-container">
       <div className="settings-card">
         <h1 style={{marginBottom:'2rem', letterSpacing:'-1px'}}>Settings & Account</h1>
+        
         <div className="settings-row" style={{flexDirection:'column', alignItems:'flex-start', gap:'0.8rem', marginBottom:'1.5rem', paddingBottom:'1.5rem', borderBottom:'1px solid var(--glass-border)'}}>
           <span>Notebook Display Name</span>
           <input 
@@ -46,7 +47,6 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
           />
         </div>
 
-        
         <div className="settings-row" style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem', paddingBottom:'1.5rem', borderBottom:'1px solid var(--glass-border)'}}>
           <span>Theme Preference</span>
           <button className="btn-icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
@@ -70,44 +70,57 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
           </div>
         </div>
 
+        <h2 style={{marginBottom:'1rem', marginTop:'1rem', fontSize:'1.2rem', letterSpacing:'-0.5px'}}>Email Server Settings (IMAP/SMTP)</h2>
         
-        <h2 style={{marginBottom:'1rem', marginTop:'1rem', fontSize:'1.2rem', letterSpacing:'-0.5px'}}>Admin & Email Settings</h2>
-        <div style={{display:'grid', gap:'15px', marginBottom:'2rem', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))'}}>
+        <div style={{display:'grid', gap:'15px', marginBottom:'1.5rem', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))'}}>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
             <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> IMAP Host</div>
-            <input className="search-input" value={imapSettings.imapHost} onChange={e => setImapSettings({...imapSettings, imapHost: e.target.value})} placeholder="imap.gmail.com" />
+            <input className="search-input" value={adminSettings.imapHost} onChange={e => setAdminSettings({...adminSettings, imapHost: e.target.value})} placeholder="imap.gmail.com" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
-            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> Port</div>
-            <input className="search-input" type="number" value={imapSettings.imapPort} onChange={e => setImapSettings({...imapSettings, imapPort: parseInt(e.target.value)})} placeholder="993" />
+            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> IMAP Port</div>
+            <input className="search-input" type="number" value={adminSettings.imapPort} onChange={e => setAdminSettings({...adminSettings, imapPort: parseInt(e.target.value)})} placeholder="993" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
-            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faUser} /> Username</div>
-            <input className="search-input" value={imapSettings.imapUser} onChange={e => setImapSettings({...imapSettings, imapUser: e.target.value})} placeholder="user@example.com" />
+            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> SMTP Host</div>
+            <input className="search-input" value={adminSettings.smtpHost} onChange={e => setAdminSettings({...adminSettings, smtpHost: e.target.value})} placeholder="smtp.gmail.com" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
-            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faKey} /> Password</div>
-            <input className="search-input" type="password" value={imapSettings.imapPass} onChange={e => setImapSettings({...imapSettings, imapPass: e.target.value})} placeholder="••••••••" />
+            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> SMTP Port</div>
+            <input className="search-input" type="number" value={adminSettings.smtpPort} onChange={e => setAdminSettings({...adminSettings, smtpPort: parseInt(e.target.value)})} placeholder="465" />
+          </div>
+          <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
+            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faUser} /> Email Username</div>
+            <input className="search-input" value={adminSettings.imapUser} onChange={e => setAdminSettings({...adminSettings, imapUser: e.target.value, smtpUser: e.target.value})} placeholder="user@example.com" />
+          </div>
+          <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
+            <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faKey} /> Email Password</div>
+            <input className="search-input" type="password" value={adminSettings.imapPass} onChange={e => setAdminSettings({...adminSettings, imapPass: e.target.value, smtpPass: e.target.value})} placeholder="••••••••" />
           </div>
         </div>
-        <div style={{display:'flex', alignItems:'center', gap:'15px', marginBottom:'2rem'}}>
+
+        <div style={{display:'flex', alignItems:'center', gap:'20px', marginBottom:'2rem', flexWrap:'wrap'}}>
            <label style={{display:'flex', alignItems:'center', gap:'10px', cursor:'pointer'}}>
-             <input type="checkbox" checked={imapSettings.imapTls} onChange={e => setImapSettings({...imapSettings, imapTls: e.target.checked})} />
-             <span>Use TLS</span>
+             <input type="checkbox" checked={adminSettings.imapTls} onChange={e => setAdminSettings({...adminSettings, imapTls: e.target.checked})} />
+             <span>IMAP TLS</span>
            </label>
-           <button className="login-btn" style={{width:'auto', padding:'0.8rem 2rem'}} onClick={saveImapSettings}>
-             <FontAwesomeIcon icon={faSave} style={{marginRight:'8px'}} /> Save Admin Settings
+           <label style={{display:'flex', alignItems:'center', gap:'10px', cursor:'pointer'}}>
+             <input type="checkbox" checked={adminSettings.smtpTls} onChange={e => setAdminSettings({...adminSettings, smtpTls: e.target.checked})} />
+             <span>SMTP TLS</span>
+           </label>
+           <button className="login-btn" style={{width:'auto', padding:'0.8rem 2rem'}} onClick={handleSaveSettings}>
+             <FontAwesomeIcon icon={faSave} style={{marginRight:'8px'}} /> Save Settings
            </button>
            {saveStatus && <span style={{fontSize:'0.9rem', color: saveStatus.includes('Failed') ? '#ff4444' : 'var(--accent-color)'}}>{saveStatus}</span>}
         </div>
 
-<h2 style={{marginBottom:'1rem', marginTop:'1rem', fontSize:'1.2rem', letterSpacing:'-0.5px'}}>Data & Backup</h2>
+        <h2 style={{marginBottom:'1rem', marginTop:'1rem', fontSize:'1.2rem', letterSpacing:'-0.5px'}}>Data & Backup</h2>
         <div style={{display:'flex', gap:'15px', marginBottom:'2rem', flexWrap:'wrap'}}>
           <button className="login-btn" style={{flex:1, background:'var(--glass-bg)', color:'var(--text-color)', border:'1px solid var(--glass-border)'}} onClick={handleExportAll}>
             <FontAwesomeIcon icon={faDownload} style={{marginRight:'8px'}}/> Export Backup
           </button>
           <label className="login-btn" style={{flex:1, background:'var(--glass-bg)', color:'var(--text-color)', border:'1px solid var(--glass-border)', cursor:'pointer'}}>
-            <FontAwesomeIcon icon={faUpload, faServer, faEnvelope, faKey, faUser, faSave} style={{marginRight:'8px'}}/> Import Backup
+            <FontAwesomeIcon icon={faUpload} style={{marginRight:'8px'}}/> Import Backup
             <input type="file" accept=".json" style={{display:'none'}} onChange={handleImportAll} />
           </label>
         </div>

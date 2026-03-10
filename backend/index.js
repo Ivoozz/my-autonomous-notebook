@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
@@ -132,13 +133,18 @@ app.delete('/api/notes/:id', authenticate, (req, res) => {
   res.status(204).send();
 });
 
-// Admin IMAP Settings (In-memory)
+// Admin IMAP/SMTP Settings (In-memory)
 let adminSettings = {
   imapHost: '',
   imapPort: 993,
   imapUser: '',
   imapPass: '',
-  imapTls: true
+  imapTls: true,
+  smtpHost: '',
+  smtpPort: 465,
+  smtpUser: '',
+  smtpPass: '',
+  smtpTls: true
 };
 
 app.get('/api/admin/settings', authenticate, (req, res) => {
@@ -190,8 +196,11 @@ app.get('/api/emails', authenticate, async (req, res) => {
                 id: message.uid,
                 subject: parsed.subject || '(No Subject)',
                 from: parsed.from ? parsed.from.text : (message.envelope.from ? message.envelope.from.map(f => `${f.name} <${f.address}>`).join(', ') : 'Unknown'),
+                to: parsed.to ? parsed.to.text : '',
                 date: message.internalDate || message.envelope.date,
-                snippet: parsed.text ? parsed.text.substring(0, 200).replace(/\\s+/g, ' ').trim() : '',
+                snippet: parsed.text ? parsed.text.substring(0, 300).replace(/\\s+/g, ' ').trim() : '',
+                body: parsed.text || '',
+                messageId: parsed.messageId,
                 priority: parsed.headers.get('importance') || 'normal'
               });
             } catch (parseErr) {
@@ -221,6 +230,38 @@ app.get('/api/emails', authenticate, async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ error: 'Failed to fetch emails: ' + error.message });
     }
+  }
+});
+
+app.post('/api/emails/send', authenticate, async (req, res) => {
+  const { to, subject, text, inReplyTo, references } = req.body;
+  if (!adminSettings.smtpHost || !adminSettings.smtpUser || !adminSettings.smtpPass) {
+    return res.status(400).json({ error: 'SMTP settings are not configured.' });
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: adminSettings.smtpHost,
+    port: parseInt(adminSettings.smtpPort) || 465,
+    secure: adminSettings.smtpTls !== false,
+    auth: {
+      user: adminSettings.smtpUser,
+      pass: adminSettings.smtpPass
+    }
+  });
+
+  try {
+    await transporter.sendMail({
+      from: adminSettings.smtpUser,
+      to,
+      subject,
+      text,
+      inReplyTo,
+      references
+    });
+    res.json({ message: 'Email sent successfully!' });
+  } catch (error) {
+    console.error('SMTP Error:', error);
+    res.status(500).json({ error: 'Failed to send email: ' + error.message });
   }
 });
 
