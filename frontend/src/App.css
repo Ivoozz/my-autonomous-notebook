@@ -6,7 +6,7 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-highlight: rgba(255, 255, 255, 0.05);
   --accent-color: #8b5cf6;
-  --accent-glow: rgba(139, 92, 246, 0.4);
+  --accent-glow: color-mix(in srgb, var(--accent-color) 40%, transparent);
   --text-color: #ffffff;
   --text-dim: rgba(255, 255, 255, 0.6);
   --bg-color: #050505;
@@ -530,4 +530,26 @@ body.light-mode .btn-icon.active svg {
 @media (max-width: 480px) {
   .sidebar-header { padding: 2rem 1.5rem 1rem; }
   .btn-icon { width: 42px; height: 42px; }
+}
+
+/* Desktop-only hiding for mobile elements */
+@media (min-width: 769px) {
+  .mobile-only { display: none !important; }
+}
+
+/* Icon & SVG Refinements */
+svg {
+  transition: color 0.3s ease, fill 0.3s ease;
+}
+
+body:not(.light-mode) svg {
+  color: #ffffff;
+}
+
+body.light-mode svg {
+  color: #1a1a1a !important;
+}
+
+.btn-icon.active svg, .login-btn svg {
+  color: #ffffff !important;
 }

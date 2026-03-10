@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass, faPlus, faThumbtack, faFileLines, faCalendarDays, faSquareCheck, faPalette, faXmark, faFilter, faPlay, faPause, faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faPlus, faThumbtack, faFileLines, faCalendarDays, faSquareCheck, faPalette, faEnvelope, faXmark, faFilter, faPlay, faPause, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import { format, parseISO } from 'date-fns';
 
 const extractTags = (text) => {
@@ -11,7 +11,7 @@ const extractTags = (text) => {
 };
 
 const Sidebar = ({ 
-  notes, activeNoteId, searchQuery, setSearchQuery, 
+  notes, activeNoteId, notebookTitle, searchQuery, setSearchQuery, 
   onNoteClick, onCreateNote, activeTab, setActiveTab, 
   sidebarOpen, setSidebarOpen 
 }) => {
@@ -54,7 +54,7 @@ const Sidebar = ({
   return (
     <aside className={`sidebar ${sidebarOpen ? 'mobile-visible' : ''}`}>
       <div className="sidebar-header">
-        <h2>Notebook</h2>
+        <h2>{notebookTitle}</h2>
         <button className="btn-icon mobile-only" onClick={() => setSidebarOpen(false)}>
           <FontAwesomeIcon icon={faXmark} size="lg" />
         </button>
@@ -69,6 +69,9 @@ const Sidebar = ({
         </button>
         <button className={`btn-icon ${activeTab === 'todos' ? 'active' : ''}`} onClick={() => setActiveTab('todos')} title="Tasks">
           <FontAwesomeIcon icon={faSquareCheck} />
+        </button>
+        <button className={`btn-icon ${activeTab === 'emails' ? 'active' : ''}`} onClick={() => setActiveTab('emails')} title="Emails">
+          <FontAwesomeIcon icon={faEnvelope} />
         </button>
         <button className={`btn-icon ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} title="Settings">
           <FontAwesomeIcon icon={faPalette} />

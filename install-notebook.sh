@@ -1,5 +1,5 @@
 #!/bin/bash
-# Notebook Ultimate Installer [v2.0.0]
+# Notebook Ultimate Installer [v3.0.0]
 # Unique ID: 773140700
 # Optimized for Debian LXC, Nginx Proxy, and Systemd Autostart
 
@@ -8,7 +8,7 @@ set -e
 # Clear screen for professional look
 clear
 echo "===================================================="
-echo "   Notebook Pro - Eye Candy Edition [v2.0.0]"
+echo "   Notebook Pro - Eye Candy Edition [v3.0.0]"
 echo "===================================================="
 
 # 1. System Check & Dependencies

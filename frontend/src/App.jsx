@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileLines, faCalendarDays, faSquareCheck, faPalette } from '@fortawesome/free-solid-svg-icons'
+import { faFileLines, faCalendarDays, faSquareCheck, faPalette, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import Sidebar from './components/Sidebar'
 import Editor from './components/Editor'
 import Planner from './components/Planner'
 import Tasks from './components/Tasks'
 import Settings from './components/Settings'
 import Auth from './components/Auth'
+import Emails from './components/Emails'
 import './App.css'
 
 const API_URL = '/api'
@@ -21,6 +22,7 @@ function App() {
   const [notes, setNotes] = useState([])
   const [activeNote, setActiveNote] = useState(null)
   const [activeTab, setActiveTab] = useState('notes')
+  const [notebookTitle, setNotebookTitle] = useState(localStorage.getItem('notebookTitle') || 'Notebook')
   const [searchQuery, setSearchQuery] = useState('')
   const [theme, setTheme] = useState(localStorage.getItem('notebook_theme') || 'dark')
   const [accentColor, setAccentColor] = useState(localStorage.getItem('notebook_accent') || '#7c4dff')
@@ -37,6 +39,7 @@ function App() {
     localStorage.setItem('notebook_theme', theme)
     localStorage.setItem('notebook_accent', accentColor)
     localStorage.setItem('notebook_blobs', bgBlobs)
+    localStorage.setItem('notebookTitle', notebookTitle)
   }, [theme, accentColor, bgBlobs])
 
   useEffect(() => {
@@ -181,6 +184,7 @@ function App() {
       )}
 
       <Sidebar 
+        notebookTitle={notebookTitle} 
         notes={notes} activeNoteId={activeNote?.id} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
         onNoteClick={(note) => { setActiveNote(note); setActiveTab('notes'); }}
         onCreateNote={handleCreateNote} activeTab={activeTab} setActiveTab={setActiveTab}
@@ -188,6 +192,10 @@ function App() {
       />
 
       <nav className="mobile-nav">
+        <button className={`nav-item ${activeTab === 'emails' ? 'active' : ''}`} onClick={() => setActiveTab('emails')}>
+          <FontAwesomeIcon icon={faEnvelope} style={{fontSize:'1.4rem'}} />
+          <span>Inbox</span>
+        </button>
         <button className={`nav-item ${activeTab === 'notes' ? 'active' : ''}`} onClick={() => setActiveTab('notes')}>
           <FontAwesomeIcon icon={faFileLines} style={{fontSize:'1.4rem'}} />
           <span>Notes</span>
@@ -201,7 +209,7 @@ function App() {
           <span>Tasks</span>
         </button>
         <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-          <FontAwesomeIcon icon={faPalette} style={{fontSize:'1.4rem'}} />
+          <FontAwesomeIcon icon={faPalette, faEnvelope} style={{fontSize:'1.4rem'}} />
           <span>Style</span>
         </button>
       </nav>
@@ -232,8 +240,15 @@ function App() {
               handleDeleteTodo={(id) => fetch(`${API_URL}/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } }).then(() => fetchTodos())}
             />
           )}
+                    {activeTab === 'emails' && (
+            <Emails token={token} handleAddTodo={(newTaskObj) => {
+                fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newTaskObj) }).then(() => fetchTodos())
+              }} 
+            />
+          )}
           {activeTab === 'settings' && (
             <Settings 
+              notebookTitle={notebookTitle} setNotebookTitle={setNotebookTitle} token={token} 
               theme={theme} setTheme={setTheme} accentColor={accentColor}
               setAccentColor={setAccentColor} handleLogout={handleLogout}
               bgBlobs={bgBlobs} setBgBlobs={setBgBlobs}
