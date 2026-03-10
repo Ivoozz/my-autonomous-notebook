@@ -13,6 +13,7 @@
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.2.0",
+    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.35.2",
     "lucide-react": "^0.577.0",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/crypto-js": "^4.2.2",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

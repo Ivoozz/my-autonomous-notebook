@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFileLines, faCalendarDays, faSquareCheck, faPalette, faEnvelope } from '@fortawesome/free-solid-svg-icons'
+import { faFileLines, faCalendarDays, faSquareCheck, faPalette, faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons'
 import Sidebar from './components/Sidebar'
 import Editor from './components/Editor'
 import Planner from './components/Planner'
@@ -9,6 +9,7 @@ import Tasks from './components/Tasks'
 import Settings from './components/Settings'
 import Auth from './components/Auth'
 import Emails from './components/Emails'
+import Passwords from './components/Passwords'
 import './App.css'
 
 const API_URL = '/api'
@@ -202,7 +203,7 @@ function App() {
 
       // 1. Tab switching
       if (isAlt && isCmd) {
-        const tabs = { '1': 'notes', '2': 'emails', '3': 'calendar', '4': 'todos', '5': 'settings' };
+        const tabs = { '1': 'notes', '2': 'emails', '3': 'calendar', '4': 'todos', '5': 'passwords', '6': 'settings' };
         if (tabs[key]) {
           e.preventDefault();
           e.stopPropagation();
@@ -288,6 +289,10 @@ function App() {
           <FontAwesomeIcon icon={faSquareCheck} style={{fontSize:'1.4rem'}} />
           <span>Tasks</span>
         </button>
+        <button className={`nav-item ${activeTab === 'passwords' ? 'active' : ''}`} onClick={() => setActiveTab('passwords')}>
+          <FontAwesomeIcon icon={faLock} style={{fontSize:'1.4rem'}} />
+          <span>Vault</span>
+        </button>
         <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
           <FontAwesomeIcon icon={faPalette} style={{fontSize:'1.4rem'}} />
           <span>Style</span>
@@ -319,6 +324,12 @@ function App() {
               handleToggleTodo={(t) => fetch(`${API_URL}/todos/${t.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ completed: !t.completed }) }).then(() => fetchTodos())}
               handleUpdateTodo={(id, updates) => fetch(`${API_URL}/todos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(updates) }).then(() => fetchTodos())}
               handleDeleteTodo={(id) => fetch(`${API_URL}/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } }).then(() => fetchTodos())}
+            />
+          )}
+          {activeTab === 'passwords' && (
+            <Passwords 
+              token={token}
+              masterPassword={password}
             />
           )}
           {activeTab === 'emails' && (
@@ -359,7 +370,7 @@ function App() {
                     <li><strong>Ctrl + P</strong>: Pin Note</li>
                     <li><strong>Ctrl + F</strong>: Focus Search</li>
                     <li><strong>Delete</strong>: Delete Note</li>
-                    <li><strong>Ctrl + Alt + 1-5</strong>: Tabs</li>
+                    <li><strong>Ctrl + Alt + 1-6</strong>: Tabs</li>
                   </ul>
                 </div>
                 <div>

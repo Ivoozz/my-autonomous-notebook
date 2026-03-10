@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass, faPlus, faThumbtack, faFileLines, faCalendarDays, faSquareCheck, faPalette, faEnvelope, faXmark, faFilter, faFolder, faCircleQuestion } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass, faPlus, faThumbtack, faFileLines, faCalendarDays, faSquareCheck, faPalette, faEnvelope, faXmark, faFilter, faFolder, faCircleQuestion, faLock } from '@fortawesome/free-solid-svg-icons';
 import { format, parseISO } from 'date-fns';
 
 const extractTags = (text) => {
@@ -56,7 +56,7 @@ const Sidebar = ({
         </button>
       </div>
 
-      <div style={{display:'flex', padding:'0 1.5rem 1rem', gap:'10px'}}>
+      <div style={{display:'flex', padding:'0 1.5rem 1rem', gap:'8px', flexWrap: 'wrap'}}>
         <button className={`btn-icon ${activeTab === 'notes' ? 'active' : ''}`} onClick={() => setActiveTab('notes')} title="Notes">
           <FontAwesomeIcon icon={faFileLines} />
         </button>
@@ -68,6 +68,9 @@ const Sidebar = ({
         </button>
         <button className={`btn-icon ${activeTab === 'todos' ? 'active' : ''}`} onClick={() => setActiveTab('todos')} title="Tasks">
           <FontAwesomeIcon icon={faSquareCheck} />
+        </button>
+        <button className={`btn-icon ${activeTab === 'passwords' ? 'active' : ''}`} onClick={() => setActiveTab('passwords')} title="Vault">
+          <FontAwesomeIcon icon={faLock} />
         </button>
         <button className={`btn-icon ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} title="Settings">
           <FontAwesomeIcon icon={faPalette} />

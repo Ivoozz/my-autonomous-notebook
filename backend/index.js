@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { ImapFlow } = require('imapflow');
 const { simpleParser } = require('mailparser');
 const nodemailer = require('nodemailer');
@@ -8,8 +10,23 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // limit each IP to 1000 requests per windowMs
+  message: { error: 'Too many requests, please try again later.' }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 auth requests per windowMs
+  message: { error: 'Too many login attempts, please try again later.' }
+});
+
+app.use('/api/', apiLimiter);
 
 // --- Simple Auth ---
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'password123';
@@ -24,7 +41,7 @@ const authenticate = (req, res, next) => {
   }
 };
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', authLimiter, (req, res) => {
   const { password } = req.body;
   if (password === AUTH_PASSWORD) {
     res.json({ token: VALID_TOKEN });
@@ -36,6 +53,43 @@ app.post('/api/login', (req, res) => {
 // In-memory arrays for storage
 let todos = [];
 let nextTodoId = 1;
+
+let passwords = [];
+let nextPasswordId = 1;
+
+// --- PASSWORD Endpoints (Protected) ---
+app.get('/api/passwords', authenticate, (req, res) => {
+  res.json(passwords);
+});
+
+app.post('/api/passwords', authenticate, (req, res) => {
+  const { title, username, encryptedData } = req.body;
+  if (!title || !encryptedData) return res.status(400).json({ error: 'Title and encryptedData are required' });
+
+  const newPassword = { id: nextPasswordId++, title, username: username || '', encryptedData, createdAt: new Date().toISOString() };
+  passwords.push(newPassword);
+  res.status(201).json(newPassword);
+});
+
+app.put('/api/passwords/:id', authenticate, (req, res) => {
+  const { id } = req.params;
+  const { title, username, encryptedData } = req.body;
+  const pwd = passwords.find(p => p.id === parseInt(id));
+  if (!pwd) return res.status(404).json({ error: 'Password entry not found' });
+  
+  if (title !== undefined) pwd.title = title;
+  if (username !== undefined) pwd.username = username;
+  if (encryptedData !== undefined) pwd.encryptedData = encryptedData;
+  pwd.updatedAt = new Date().toISOString();
+  
+  res.json(pwd);
+});
+
+app.delete('/api/passwords/:id', authenticate, (req, res) => {
+  const { id } = req.params;
+  passwords = passwords.filter(p => p.id !== parseInt(id));
+  res.status(204).send();
+});
 
 let notes = [
   {
