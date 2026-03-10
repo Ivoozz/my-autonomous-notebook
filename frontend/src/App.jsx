@@ -1,56 +1,87 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import { format, isSameDay, parseISO } from 'date-fns'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Search, Plus, Settings, Calendar as CalendarIcon, 
+  CheckSquare, LogOut, Sun, Moon, Pin, Save, 
+  Trash2, Download, Menu, X, ArrowLeft, ChevronRight
+} from 'lucide-react'
 import './App.css'
 
 const API_URL = '/api'
 
 function App() {
-  // Auth State
+  // --- States ---
   const [token, setToken] = useState(localStorage.getItem('notebook_token') || '')
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   
-  // App State
   const [notes, setNotes] = useState([])
   const [activeNote, setActiveNote] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Features State
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('date-desc')
   const [categoryFilter, setCategoryFilter] = useState('All')
   const [theme, setTheme] = useState(localStorage.getItem('notebook_theme') || 'dark')
   const [isSaving, setIsSaving] = useState(false)
-  const [view, setView] = useState('editor') // 'editor' or 'calendar'
+  const [view, setView] = useState('editor') // 'editor', 'calendar', 'settings'
   
-  // Todo State
   const [showTodos, setShowTodos] = useState(false)
   const [todos, setTodos] = useState([])
   const [newTodoTask, setNewTodoTask] = useState('')
-
-  // Calendar State
   const [calendarDate, setCalendarDate] = useState(new Date())
 
-  // Theme Toggle Effect
+  // --- Effects ---
   useEffect(() => {
     document.body.className = theme === 'light' ? 'light-mode' : ''
     localStorage.setItem('notebook_theme', theme)
   }, [theme])
 
-  // Fetch Data
   useEffect(() => {
     if (token) fetchNotes()
     else setLoading(false)
   }, [token])
 
+  // --- Auto-save Logic ---
   useEffect(() => {
-    if (showTodos && token) fetchTodos()
-  }, [showTodos, token])
+    const delayDebounceFn = setTimeout(() => {
+      if (activeNote && activeNote._isDirty) {
+        saveNoteToServer(activeNote)
+      }
+    }, 1000)
 
+    return () => clearTimeout(delayDebounceFn)
+  }, [activeNote?.content, activeNote?.title, activeNote?.category])
+
+  const saveNoteToServer = async (note) => {
+    setIsSaving(true)
+    try {
+      await fetch(`${API_URL}/notes/${note.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ 
+          title: note.title, 
+          content: note.content, 
+          category: note.category,
+          isPinned: note.isPinned,
+          date: note.date
+        })
+      })
+      // Clear dirty flag
+      setActiveNote(prev => prev?.id === note.id ? { ...prev, _isDirty: false } : prev)
+    } catch (err) {
+      console.error('Save failed:', err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // --- API Actions ---
   const fetchNotes = async () => {
     try {
       const res = await fetch(`${API_URL}/notes`, { headers: { 'Authorization': token } })
@@ -60,19 +91,10 @@ function App() {
       if (data.length > 0 && !activeNote) setActiveNote(data[0])
       setLoading(false)
     } catch (err) {
-      console.error(err)
       setLoading(false)
     }
   }
 
-  const fetchTodos = async () => {
-    try {
-      const res = await fetch(`${API_URL}/todos`, { headers: { 'Authorization': token } })
-      if (res.ok) setTodos(await res.json())
-    } catch (err) { console.error(err) }
-  }
-
-  // --- Auth Handlers ---
   const handleLogin = async (e) => {
     e.preventDefault()
     try {
@@ -97,9 +119,9 @@ function App() {
     localStorage.removeItem('notebook_token')
     setNotes([])
     setActiveNote(null)
+    setView('editor')
   }
 
-  // --- Note CRUD Handlers ---
   const handleCreateNote = async (initialDate = null) => {
     try {
       const newNote = { 
@@ -122,28 +144,13 @@ function App() {
     } catch (err) { console.error(err) }
   }
 
-  const handleUpdateNote = async (updates) => {
-    if (!activeNote) return
-    setIsSaving(true)
-
-    const updatedNote = { ...activeNote, ...updates, updatedAt: new Date().toISOString() }
-    setActiveNote(updatedNote)
-    setNotes(notes.map(n => n.id === activeNote.id ? updatedNote : n))
-
-    try {
-      await fetch(`${API_URL}/notes/${activeNote.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': token },
-        body: JSON.stringify(updates)
-      })
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsSaving(false)
-    }
+  const handleUpdateActiveNote = (updates) => {
+    setActiveNote(prev => ({ ...prev, ...updates, _isDirty: true }))
+    setNotes(prevNotes => prevNotes.map(n => n.id === activeNote.id ? { ...n, ...updates } : n))
   }
 
   const handleDeleteNote = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this note?')) return
     try {
       await fetch(`${API_URL}/notes/${id}`, { method: 'DELETE', headers: { 'Authorization': token } })
       const updatedNotes = notes.filter(n => n.id !== id)
@@ -152,268 +159,244 @@ function App() {
     } catch (err) { console.error(err) }
   }
 
-  const togglePin = (e, note) => {
-    e.stopPropagation()
-    const isPinned = !note.isPinned
-    if (activeNote?.id === note.id) handleUpdateNote({ isPinned })
-    else {
-      setNotes(notes.map(n => n.id === note.id ? { ...n, isPinned } : n))
-      fetch(`${API_URL}/notes/${note.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': token },
-        body: JSON.stringify({ isPinned })
-      }).catch(console.error)
-    }
-  }
-
-  const downloadMarkdown = () => {
-    if (!activeNote) return
-    const blob = new Blob([activeNote.content], { type: 'text/markdown' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${activeNote.title || 'note'}.md`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
-  // --- Todo Handlers ---
-  const handleAddTodo = async (e) => {
-    e.preventDefault()
-    if (!newTodoTask.trim()) return
-    try {
-      const res = await fetch(`${API_URL}/todos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': token },
-        body: JSON.stringify({ task: newTodoTask })
+  // --- Derived ---
+  const filteredNotes = useMemo(() => {
+    return notes
+      .filter(n => categoryFilter === 'All' || n.category === categoryFilter)
+      .filter(n => !searchQuery || n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1
+        if (!a.isPinned && b.isPinned) return 1
+        return sortBy === 'date-desc' ? new Date(b.createdAt) - new Date(a.createdAt) : (a.title || '').localeCompare(b.title || '')
       })
-      if (res.ok) {
-        setTodos([...todos, await res.json()])
-        setNewTodoTask('')
-      }
-    } catch (err) { console.error(err) }
-  }
-
-  const handleToggleTodo = async (todo) => {
-    const completed = !todo.completed
-    setTodos(todos.map(t => t.id === todo.id ? { ...t, completed } : t))
-    await fetch(`${API_URL}/todos/${todo.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': token },
-      body: JSON.stringify({ completed })
-    }).catch(console.error)
-  }
-
-  const handleDeleteTodo = async (id) => {
-    setTodos(todos.filter(t => t.id !== id))
-    await fetch(`${API_URL}/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } }).catch(console.error)
-  }
-
-  // --- Derived Data ---
-  const filteredAndSortedNotes = useMemo(() => {
-    let result = [...notes]
-    if (categoryFilter !== 'All') result = result.filter(n => n.category === categoryFilter)
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      result = result.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q))
-    }
-    result.sort((a, b) => {
-      if (a.isPinned && !b.isPinned) return -1
-      if (!a.isPinned && b.isPinned) return 1
-      if (sortBy === 'date-desc') return new Date(b.createdAt) - new Date(a.createdAt)
-      if (sortBy === 'date-asc') return new Date(a.createdAt) - new Date(b.createdAt)
-      if (sortBy === 'alpha-asc') return (a.title || '').localeCompare(b.title || '')
-      return 0
-    })
-    return result
   }, [notes, searchQuery, sortBy, categoryFilter])
 
-  const categories = ['All', ...new Set(notes.map(n => n.category || 'General'))]
+  // --- Components ---
+  const LoginView = () => (
+    <div className="login-container">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="login-card"
+      >
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Notebook Pro</h1>
+        <p style={{ color: 'var(--text-dim)', marginBottom: '2rem' }}>Secure your thoughts with elegance.</p>
+        <form onSubmit={handleLogin}>
+          <input 
+            type="password" 
+            className="login-input" 
+            placeholder="Password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            autoFocus 
+          />
+          {loginError && <div className="login-error">{loginError}</div>}
+          <button type="submit" className="login-btn">Unlock</button>
+        </form>
+      </motion.div>
+    </div>
+  )
 
-  const stats = useMemo(() => {
-    if (!activeNote) return { words: 0, chars: 0 }
-    const text = activeNote.content || ''
-    const words = text.trim().split(/\s+/).filter(w => w.length > 0).length
-    return { words, chars: text.length }
-  }, [activeNote?.content])
-
-  // Calendar Helper
-  const notesOnSelectedDay = useMemo(() => {
-    return notes.filter(n => n.date && isSameDay(parseISO(n.date), calendarDate))
-  }, [notes, calendarDate])
-
-  const tileClassName = ({ date, view }) => {
-    if (view === 'month') {
-      if (notes.find(n => n.date && isSameDay(parseISO(n.date), date))) {
-        return 'has-notes'
-      }
-    }
-  }
-
-  if (!token) {
-    return (
-      <div className="login-container">
-        <div className="login-card">
-          <h1>Notebook</h1>
-          <form onSubmit={handleLogin}>
-            <input type="password" className="login-input" placeholder="Enter Password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
-            {loginError && <div className="login-error">{loginError}</div>}
-            <button type="submit" className="login-btn">Login</button>
-          </form>
-        </div>
+  const SidebarItem = ({ note }) => (
+    <motion.div 
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={`note-item ${activeNote?.id === note.id ? 'active' : ''}`}
+      onClick={() => { setActiveNote(note); setView('editor'); setSidebarOpen(false); }}
+    >
+      <div className="note-title-small">
+        {note.isPinned && <Pin size={12} fill="var(--accent-color)" style={{ marginRight: 6 }} />}
+        {note.title || 'Untitled'}
       </div>
-    )
-  }
+      <div className="note-meta">
+        <span>{note.category}</span>
+        <span>{format(parseISO(note.createdAt), 'MMM d')}</span>
+      </div>
+    </motion.div>
+  )
 
-  if (loading) return <div className="app-container">Loading...</div>
+  if (!token) return <LoginView />
+  if (loading) return <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>Loading...</div>
 
   return (
     <div className="app-container">
-      <div className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`} onClick={() => setSidebarOpen(false)}></div>
-      
-      <div className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+      {/* Sidebar */}
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <h2>Notebook</h2>
-          <button className="btn-icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle Theme">
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
-          <button onClick={() => handleCreateNote()} className="new-note-btn">+ New</button>
+          <button className="btn-icon" onClick={() => setView('settings')} title="Settings"><Settings size={20} /></button>
         </div>
 
-        <div className="sidebar-controls">
-          <input type="text" className="search-input" placeholder="Search notes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-          <div className="filter-row">
-            <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="date-desc">Newest</option>
-              <option value="date-asc">Oldest</option>
-              <option value="alpha-asc">A-Z</option>
-            </select>
-            <select className="category-select" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+        <div className="search-container">
+          <div style={{ position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: 'var(--text-dim)' }} />
+            <input 
+              type="text" 
+              className="search-input" 
+              placeholder="Search..." 
+              style={{ paddingLeft: 38 }}
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+            />
           </div>
         </div>
 
         <div className="notes-list">
-          {filteredAndSortedNotes.map(note => (
-            <div key={note.id} className={`note-item ${activeNote?.id === note.id ? 'active' : ''}`} onClick={() => { setActiveNote(note); setSidebarOpen(false); setView('editor'); }}>
-              <div className="note-title-small">{note.title || 'Untitled'}</div>
-              <div className="note-meta">
-                <span>{note.category}</span>
-                {note.date && <span style={{color: 'var(--accent-color)'}}>📅 {format(parseISO(note.date), 'MMM d')}</span>}
-              </div>
-              <span className="pin-indicator" onClick={(e) => togglePin(e, note)}>{note.isPinned ? '📌' : '📍'}</span>
-            </div>
-          ))}
+          <AnimatePresence mode="popLayout">
+            {filteredNotes.map(note => <SidebarItem key={note.id} note={note} />)}
+          </AnimatePresence>
         </div>
 
         <div className="sidebar-footer">
-          <button className="btn btn-icon" onClick={() => setView(view === 'editor' ? 'calendar' : 'editor')} title="Toggle Calendar">
-            {view === 'editor' ? '📅' : '📝'}
+          <button className="btn-icon" onClick={() => setView('calendar')} title="Calendar"><CalendarIcon size={20} /></button>
+          <button className="btn-icon" onClick={() => setShowTodos(true)} title="Tasks"><CheckSquare size={20} /></button>
+          <button className="btn-icon" onClick={() => handleCreateNote()} style={{ flex: 1, width: 'auto', background: 'var(--accent-color)', color: 'white' }}>
+            <Plus size={20} /> <span style={{ marginLeft: 8 }}>New Note</span>
           </button>
-          <button className="btn btn-primary" onClick={() => setShowTodos(true)}>✓ Todos</button>
-          <button className="btn-logout" onClick={handleLogout}>Logout</button>
         </div>
-      </div>
+      </aside>
 
-      <div className="main-content">
-        <div className="editor-header">
-          <button className="menu-toggle" onClick={() => setSidebarOpen(true)}>☰</button>
-          
-          {view === 'calendar' ? (
-            <div className="title-input">Calendar View</div>
-          ) : activeNote ? (
-            <>
-              <input className="title-input" value={activeNote.title} onChange={(e) => handleUpdateNote({ title: e.target.value })} placeholder="Title" />
-              <input className="category-input" value={activeNote.category} onChange={(e) => handleUpdateNote({ category: e.target.value })} placeholder="Category" />
-              <input type="date" className="date-input" value={activeNote.date ? format(parseISO(activeNote.date), 'yyyy-MM-dd') : ''} onChange={(e) => handleUpdateNote({ date: e.target.value ? new Date(e.target.value).toISOString() : null })} />
-              <button className="btn-icon" onClick={(e) => togglePin(e, activeNote)} title="Pin Note">{activeNote.isPinned ? '📌' : '📍'}</button>
-              <button className="btn-icon" onClick={downloadMarkdown} title="Export">💾</button>
-              <button className="btn btn-delete-todo" style={{marginLeft: 'auto'}} onClick={() => handleDeleteNote(activeNote.id)}>🗑️</button>
-            </>
-          ) : (
-            <div className="title-input">No note selected</div>
-          )}
-        </div>
-        
-        {view === 'calendar' ? (
-          <div className="calendar-view">
-            <div className="calendar-container">
-              <Calendar onChange={setCalendarDate} value={calendarDate} tileClassName={tileClassName} />
-            </div>
-            <div className="day-notes-list">
-              <h3>Notes for {format(calendarDate, 'MMMM d, yyyy')}</h3>
-              <div className="notes-list">
-                {notesOnSelectedDay.map(note => (
-                  <div key={note.id} className="note-item" onClick={() => { setActiveNote(note); setView('editor'); }}>
-                    <div className="note-title-small">{note.title}</div>
-                    <div className="note-meta">{note.category}</div>
+      {/* Main Area */}
+      <main className="main-content">
+        <AnimatePresence mode="wait">
+          {view === 'settings' ? (
+            <motion.div 
+              key="settings"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="settings-container"
+            >
+              <div className="settings-section">
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
+                  <button className="btn-icon" onClick={() => setView('editor')} style={{ marginRight: '1rem' }}><ArrowLeft size={20} /></button>
+                  <h1>Settings</h1>
+                </div>
+                
+                <div className="settings-row">
+                  <div>
+                    <h3>Appearance</h3>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Choose between light and dark themes.</p>
                   </div>
-                ))}
-                {notesOnSelectedDay.length === 0 && (
-                  <div style={{textAlign: 'center', padding: '2rem'}}>
-                    <p style={{color: '#888'}}>No notes for this day.</p>
-                    <button className="btn btn-primary" onClick={() => handleCreateNote(calendarDate)}>+ Add Note for this day</button>
+                  <button className="btn-icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                    {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                  </button>
+                </div>
+
+                <div className="settings-row">
+                  <div>
+                    <h3>Sort Order</h3>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>How your notes are ordered in the sidebar.</p>
+                  </div>
+                  <select className="login-input" style={{ width: 150, marginBottom: 0 }} value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    <option value="date-desc">Newest First</option>
+                    <option value="alpha-asc">A - Z</option>
+                  </select>
+                </div>
+
+                <div className="settings-row">
+                  <div>
+                    <h3>Logout</h3>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Sign out of your account on this device.</p>
+                  </div>
+                  <button className="btn-icon" onClick={handleLogout} style={{ border: '1px solid #ff4444', color: '#ff4444' }}><LogOut size={20} /></button>
+                </div>
+              </div>
+            </motion.div>
+          ) : view === 'calendar' ? (
+            <motion.div 
+              key="calendar"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="calendar-view"
+            >
+               <div style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                  <button className="btn-icon" onClick={() => setView('editor')} style={{ marginRight: '1rem' }}><ArrowLeft size={20} /></button>
+                  <h1>Calendar</h1>
+                </div>
+              <div className="calendar-container">
+                <Calendar 
+                  onChange={setCalendarDate} 
+                  value={calendarDate} 
+                  tileClassName={({ date, view }) => view === 'month' && notes.find(n => n.date && isSameDay(parseISO(n.date), date)) ? 'has-notes' : ''} 
+                />
+              </div>
+              <div className="day-notes-list">
+                <h3>Notes for {format(calendarDate, 'MMMM d, yyyy')}</h3>
+                <div className="notes-list">
+                  {notes.filter(n => n.date && isSameDay(parseISO(n.date), calendarDate)).map(note => (
+                    <div key={note.id} className="note-item" onClick={() => { setActiveNote(note); setView('editor'); }}>
+                      <div className="note-title-small">{note.title}</div>
+                      <div className="note-meta">{note.category}</div>
+                    </div>
+                  ))}
+                  <button className="btn-icon" style={{ width: '100%', marginTop: '1rem' }} onClick={() => handleCreateNote(calendarDate)}>+ Add Note for this day</button>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="editor"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+            >
+              <header className="editor-header">
+                <button className="menu-toggle" onClick={() => setSidebarOpen(true)}><Menu size={24} /></button>
+                {activeNote ? (
+                  <>
+                    <input className="title-input" value={activeNote.title} onChange={(e) => handleUpdateActiveNote({ title: e.target.value })} placeholder="Note Title" />
+                    <input className="category-input" value={activeNote.category} onChange={(e) => handleUpdateActiveNote({ category: e.target.value })} placeholder="Category" />
+                    <button className={`btn-icon ${activeNote.isPinned ? 'active' : ''}`} onClick={() => handleUpdateActiveNote({ isPinned: !activeNote.isPinned })}>
+                      <Pin size={18} fill={activeNote.isPinned ? "var(--accent-color)" : "none"} />
+                    </button>
+                    <button className="btn-icon" onClick={() => handleDeleteNote(activeNote.id)}><Trash2 size={18} /></button>
+                  </>
+                ) : <div className="title-input">Select a note</div>}
+              </header>
+
+              <div className="editor-body">
+                {activeNote ? (
+                  <>
+                    <div className="editor-pane">
+                      <textarea className="markdown-editor" value={activeNote.content} onChange={(e) => handleUpdateActiveNote({ content: e.target.value })} placeholder="Start typing your ideas..." />
+                    </div>
+                    <div className="preview-pane">
+                      <ReactMarkdown>{activeNote.content}</ReactMarkdown>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-dim)' }}>
+                    <h2>Create a new note to start writing.</h2>
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="editor-body">
-              {activeNote ? (
-                <>
-                  <div className="editor-pane">
-                    <textarea className="markdown-editor" value={activeNote.content} onChange={(e) => handleUpdateNote({ content: e.target.value })} placeholder="Start writing..." />
-                  </div>
-                  <div className="preview-pane"><ReactMarkdown>{activeNote.content}</ReactMarkdown></div>
-                </>
-              ) : (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100%' }}>
-                  <h3>Select or create a note to begin.</h3>
-                </div>
-              )}
-            </div>
-            {activeNote && (
-              <div className="editor-footer">
-                <div className="save-indicator">
-                  <div className={`save-dot ${isSaving ? 'saving' : ''}`}></div>
-                  {isSaving ? 'Saving...' : 'Saved'}
-                </div>
-                <div>{stats.words} words | {stats.chars} chars</div>
-                <div>Updated: {new Date(activeNote.updatedAt || activeNote.createdAt).toLocaleString()}</div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
 
-      {showTodos && (
-        <div className="todo-modal-overlay" onClick={() => setShowTodos(false)}>
-          <div className="todo-modal" onClick={e => e.stopPropagation()}>
-            <div className="todo-header">
-              <h2>My Todos</h2>
-              <button className="btn-icon" onClick={() => setShowTodos(false)}>✕</button>
-            </div>
-            <div className="todo-body">
-              <form className="todo-input-row" onSubmit={handleAddTodo}>
-                <input type="text" className="todo-input" placeholder="Add a new task..." value={newTodoTask} onChange={e => setNewTodoTask(e.target.value)} />
-                <button type="submit" className="btn btn-primary">Add</button>
-              </form>
-              <div className="todo-list">
-                {todos.map(todo => (
-                  <div key={todo.id} className="todo-item">
-                    <input type="checkbox" checked={todo.completed} onChange={() => handleToggleTodo(todo)} />
-                    <span className={`todo-text ${todo.completed ? 'completed' : ''}`}>{todo.task}</span>
-                    <button className="btn-delete-todo" onClick={() => handleDeleteTodo(todo.id)}>✕</button>
+              {activeNote && (
+                <footer className="editor-footer">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div className={`save-dot ${isSaving ? 'saving' : ''}`} />
+                    {isSaving ? 'Saving...' : 'All changes saved'}
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                  <div>{activeNote.content.split(/\s+/).length} words</div>
+                  <div>Last edited {format(parseISO(activeNote.updatedAt || activeNote.createdAt), 'HH:mm')}</div>
+                </footer>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* Overlay for mobile sidebar */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="modal-overlay" 
+            style={{ background: 'rgba(0,0,0,0.3)', zIndex: 90 }}
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

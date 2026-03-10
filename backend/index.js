@@ -36,10 +36,11 @@ let nextTodoId = 1;
 let notes = [
   {
     id: 1,
-    title: 'Welcome to your Notebook',
-    content: '# Hello World\n\nThis is your first note. You can use **Markdown** here!',
-    category: 'General',
-    isPinned: false,
+    title: '🚀 Welcome to Notebook Pro',
+    content: '# Welcome to your New Notebook!\n\nThis app is designed for speed, beauty, and organization.\n\n### 📝 Markdown Guide\nYou can use standard Markdown to style your notes:\n- **Bold** or *Italic* text\n- # Headers (H1 to H6)\n- [Links](https://google.com)\n- `Inline code` and code blocks\n- > Blockquotes\n\n### 💡 Key Features\n1. **Glassmorphism UI**: High-end modern design with blur effects.\n2. **Auto-save**: Your notes save automatically as you type.\n3. **Calendar**: Associate notes with specific dates for planning.\n4. **Todo Manager**: Keep track of tasks in the dedicated modal.\n5. **Export**: Save your notes as `.md` files anytime.\n6. **Pins**: Keep your most important notes at the top.\n\n### ⌨️ Quick Tips\n- Use the **Search** bar to find notes instantly.\n- Toggle **Dark/Light** mode in the Settings page.\n- Use the **Hamburger Menu** on mobile to navigate.',
+    category: 'Guide',
+    isPinned: true,
+    date: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
