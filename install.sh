@@ -20,9 +20,11 @@ if [ ! -d "$INSTALL_DIR" ]; then
     echo "Cloning repository to $INSTALL_DIR..."
     git clone "$REPO_URL" "$INSTALL_DIR"
 else
-    echo "Directory $INSTALL_DIR already exists. Pulling latest changes..."
+    echo "Directory $INSTALL_DIR already exists. Forcing update to latest version..."
     cd "$INSTALL_DIR"
-    git pull || echo "Not a git repository or pull failed, proceeding with existing files."
+    # Ensure we are on a clean state to avoid merge conflicts
+    git fetch origin
+    git reset --hard origin/main
 fi
 
 cd "$INSTALL_DIR"
@@ -62,6 +64,9 @@ fi
 
 # 6. Configure Nginx
 echo "Configuring Nginx..."
+# Remove old htpasswd if it exists to clean up
+rm -f /etc/nginx/.htpasswd
+
 cat <<EOF > /etc/nginx/sites-available/notebook
 server {
     listen 80;
