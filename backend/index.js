@@ -7,6 +7,28 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
+// --- Simple Auth ---
+const AUTH_PASSWORD = 'password123'; // User can change this later
+const VALID_TOKEN = 'secret-token-123';
+
+const authenticate = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (token === VALID_TOKEN) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  if (password === AUTH_PASSWORD) {
+    res.json({ token: VALID_TOKEN });
+  } else {
+    res.status(401).json({ error: 'Invalid password' });
+  }
+});
+
 // In-memory arrays for storage
 let todos = [];
 let nextTodoId = 1;
@@ -22,12 +44,12 @@ let notes = [
 ];
 let nextNoteId = 2;
 
-// --- TODO Endpoints ---
-app.get('/api/todos', (req, res) => {
+// --- TODO Endpoints (Protected) ---
+app.get('/api/todos', authenticate, (req, res) => {
   res.json(todos);
 });
 
-app.post('/api/todos', (req, res) => {
+app.post('/api/todos', authenticate, (req, res) => {
   const { task } = req.body;
   if (!task) return res.status(400).json({ error: 'Task is required' });
 
@@ -36,7 +58,7 @@ app.post('/api/todos', (req, res) => {
   res.status(201).json(newTodo);
 });
 
-app.put('/api/todos/:id', (req, res) => {
+app.put('/api/todos/:id', authenticate, (req, res) => {
   const { id } = req.params;
   const { completed } = req.body;
   const todo = todos.find(t => t.id === parseInt(id));
@@ -45,18 +67,18 @@ app.put('/api/todos/:id', (req, res) => {
   res.json(todo);
 });
 
-app.delete('/api/todos/:id', (req, res) => {
+app.delete('/api/todos/:id', authenticate, (req, res) => {
   const { id } = req.params;
   todos = todos.filter(t => t.id !== parseInt(id));
   res.status(204).send();
 });
 
-// --- NOTE Endpoints ---
-app.get('/api/notes', (req, res) => {
+// --- NOTE Endpoints (Protected) ---
+app.get('/api/notes', authenticate, (req, res) => {
   res.json(notes);
 });
 
-app.post('/api/notes', (req, res) => {
+app.post('/api/notes', authenticate, (req, res) => {
   const { title, content, category } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
@@ -72,7 +94,7 @@ app.post('/api/notes', (req, res) => {
   res.status(201).json(newNote);
 });
 
-app.put('/api/notes/:id', (req, res) => {
+app.put('/api/notes/:id', authenticate, (req, res) => {
   const { id } = req.params;
   const { title, content, category } = req.body;
   const noteIndex = notes.findIndex(n => n.id === parseInt(id));
@@ -90,7 +112,7 @@ app.put('/api/notes/:id', (req, res) => {
   res.json(notes[noteIndex]);
 });
 
-app.delete('/api/notes/:id', (req, res) => {
+app.delete('/api/notes/:id', authenticate, (req, res) => {
   const { id } = req.params;
   notes = notes.filter(n => n.id !== parseInt(id));
   res.status(204).send();
