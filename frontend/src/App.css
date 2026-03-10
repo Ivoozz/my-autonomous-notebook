@@ -324,20 +324,66 @@ body.light-mode .sidebar-header h2 { background: linear-gradient(135deg, #000 0%
 .btn-icon.active { background: var(--accent-color); color: #ffffff !important; border-color: transparent; box-shadow: 0 8px 25px var(--accent-glow); }
 .btn-icon.active svg { color: #ffffff !important; fill: #ffffff !important; }
 
-body.light-mode .btn-icon.active {
-  background: var(--accent-color);
-  color: #ffffff !important;
+/* --- Auth / Login Screen --- */
+.login-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-color);
+  position: relative;
+  overflow: hidden;
 }
 
-body.light-mode .btn-icon.active svg {
-  color: #ffffff !important;
-  fill: #ffffff !important;
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+  padding: 3.5rem 2.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  z-index: 10;
 }
 
-.nav-item.active { color: var(--accent-color); text-shadow: 0 0 15px var(--accent-glow); }
+.login-input {
+  width: 100%;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-color);
+  font-size: 1.1rem;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  letter-spacing: 2px;
+}
 
-.save-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); margin-right: 10px; box-shadow: 0 0 10px var(--accent-glow); transition: all 0.3s; }
-.save-dot.saving { background: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); animation: pulse 1s infinite; }
+.login-input:focus {
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+  transform: translateY(-2px);
+}
+
+body.light-mode .login-input {
+  background: rgba(0, 0, 0, 0.03);
+  color: #000;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .login-input:focus {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 .login-btn {
   width: 100%; padding: 1.2rem; background: var(--accent-color); color: white;
   border: none; border-radius: var(--radius-md); font-size: 1.05rem; font-weight: 800; 

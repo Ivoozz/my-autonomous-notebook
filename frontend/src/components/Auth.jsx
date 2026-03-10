@@ -6,6 +6,11 @@ import { faLock } from '@fortawesome/free-solid-svg-icons';
 const Auth = ({ password, setPassword, handleLogin, loginError }) => {
   return (
     <div className="login-container">
+      <div className="bg-blobs">
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
+      </div>
       <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="login-card">
         <div style={{marginBottom:'1.5rem', color:'var(--accent-color)'}}>
           <FontAwesomeIcon icon={faLock} size="3x" />
