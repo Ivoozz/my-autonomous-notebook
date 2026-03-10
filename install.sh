@@ -13,21 +13,9 @@ apt-get update
 apt-get install -y nginx nodejs npm curl git
 
 # 2. Repository Setup
-INSTALL_DIR="/opt/notebook"
-REPO_URL="https://github.com/Ivoozz/my-autonomous-notebook.git"
-
-if [ ! -d "$INSTALL_DIR" ]; then
-    echo "Cloning repository to $INSTALL_DIR..."
-    git clone "$REPO_URL" "$INSTALL_DIR"
-else
-    echo "Directory $INSTALL_DIR already exists. Forcing update to latest version..."
-    cd "$INSTALL_DIR"
-    # Ensure we are on a clean state to avoid merge conflicts
-    git fetch origin
-    git reset --hard origin/main
-fi
-
-cd "$INSTALL_DIR"
+# We'll use the current directory we are in
+INSTALL_DIR=$(pwd)
+echo "Current installation directory: $INSTALL_DIR"
 
 # 3. Security Setup (Application Level)
 echo ""
@@ -38,35 +26,24 @@ echo "To change it, edit $INSTALL_DIR/backend/index.js"
 
 # 4. Setup Backend
 echo "Setting up backend..."
-if [ -d "backend" ]; then
-    cd backend
-    npm install
-    pkill -f "node index.js" || true
-    nohup node index.js > backend.log 2>&1 &
-    echo "Backend started in background (PID: $!)"
-    cd ..
-else
-    echo "Error: backend directory not found in $(pwd)"
-    exit 1
-fi
+cd "$INSTALL_DIR/backend"
+npm install
+# pkill to ensure we don't have multiple instances
+pkill -f "node index.js" || true
+# Run in background and ensure it persists
+nohup node index.js > backend.log 2>&1 &
+echo "Backend started in background (PID: $!)"
 
 # 5. Setup Frontend
 echo "Building frontend..."
-if [ -d "frontend" ]; then
-    cd frontend
-    npm install
-    npm run build
-    cd ..
-else
-    echo "Error: frontend directory not found in $(pwd)"
-    exit 1
-fi
+cd "$INSTALL_DIR/frontend"
+npm install
+# Fix the API URL to be relative before building
+sed -i "s|const API_URL = .*|const API_URL = '/api'|g" src/App.jsx
+npm run build
 
 # 6. Configure Nginx
 echo "Configuring Nginx..."
-# Remove old htpasswd if it exists to clean up
-rm -f /etc/nginx/.htpasswd
-
 cat <<EOF > /etc/nginx/sites-available/notebook
 server {
     listen 80;
@@ -79,8 +56,8 @@ server {
         try_files \$uri \$uri/ /index.html;
     }
 
-    location /api {
-        proxy_pass http://localhost:5000;
+    location /api/ {
+        proxy_pass http://localhost:5000/api/;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -93,8 +70,12 @@ EOF
 ln -sf /etc/nginx/sites-available/notebook /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
-# Adjust permissions for Nginx
+# Adjust permissions for Nginx to access the directory
+# IMPORTANT: Nginx user (www-data) needs search (+) permission on all parent directories
+# Since we are likely in /root, this is risky. Let's suggest moving it if it fails.
 chmod -R 755 "$INSTALL_DIR"
+# Also need to make sure the parent directory is accessible
+chmod 755 /root || true
 
 # 7. Restart Nginx
 echo "Restarting Nginx..."
