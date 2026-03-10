@@ -29,6 +29,7 @@ function App() {
   const [todos, setTodos] = useState([])
   const [newTodoTask, setNewTodoTask] = useState('')
   const [calendarDate, setCalendarDate] = useState(new Date())
+  const [sortByCategory, setSortByCategory] = useState(false)
 
   // --- Effects ---
   useEffect(() => {
@@ -142,6 +143,7 @@ function App() {
         onNoteClick={(note) => { setActiveNote(note); setActiveTab('notes'); }}
         onCreateNote={handleCreateNote} activeTab={activeTab} setActiveTab={setActiveTab}
         sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
+        sortByCategory={sortByCategory} setSortByCategory={setSortByCategory}
       />
 
       <nav className="mobile-nav">

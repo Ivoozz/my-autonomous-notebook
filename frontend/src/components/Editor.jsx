@@ -22,15 +22,34 @@ const Editor = ({
               value={activeNote.title} 
               onChange={(e) => handleUpdateActiveNote({ title: e.target.value })} 
             />
-            <button className="btn-icon" onClick={handleExport} title="Export .md">
-              <FontAwesomeIcon icon={faDownload} />
-            </button>
-            <button className="btn-icon" onClick={() => handleUpdateActiveNote({ isPinned: !activeNote.isPinned })}>
-              <FontAwesomeIcon icon={faThumbtack} color={activeNote.isPinned ? "var(--accent-color)" : "inherit"} />
-            </button>
-            <button className="btn-icon" onClick={() => handleDeleteNote(activeNote.id)}>
-              <FontAwesomeIcon icon={faTrashCan} />
-            </button>
+            
+            <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
+              <input 
+                type="text"
+                placeholder="Category"
+                className="date-input-ghost"
+                style={{width: '120px', fontSize: '0.8rem'}}
+                value={activeNote.category || ''}
+                onChange={(e) => handleUpdateActiveNote({ category: e.target.value })}
+              />
+
+              <input 
+                type="date"
+                className="date-input-ghost"
+                value={activeNote.date ? activeNote.date.split('T')[0] : ''}
+                onChange={(e) => handleUpdateActiveNote({ date: e.target.value })}
+              />
+
+              <button className="btn-icon" onClick={handleExport} title="Export .md">
+                <FontAwesomeIcon icon={faDownload} />
+              </button>
+              <button className="btn-icon" onClick={() => handleUpdateActiveNote({ isPinned: !activeNote.isPinned })}>
+                <FontAwesomeIcon icon={faThumbtack} color={activeNote.isPinned ? "var(--accent-color)" : "inherit"} />
+              </button>
+              <button className="btn-icon" onClick={() => handleDeleteNote(activeNote.id)}>
+                <FontAwesomeIcon icon={faTrashCan} />
+              </button>
+            </div>
           </>
         ) : <div className="title-input">Select a Note</div>}
       </header>
