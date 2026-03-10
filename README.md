@@ -6,7 +6,7 @@ Notebook Pro is an autonomous, fully-featured productivity workspace combining M
 
 - **📝 Advanced Markdown Editor:** Full markdown support, syntax highlighting, task lists, and reading time estimation.
 - **📅 Daily Planner & Calendar:** Visually track notes and tasks against a calendar view.
-- **✅ Quick Tasks:** Keep track of high, medium, and low priority tasks.
+- **📊 Kanban Board & Task List:** Manage tasks with a flexible List view or a Kanban Board (To Do, In Progress, Done).
 - **📧 Email Integration:** Connect via IMAP/SMTP to read, reply, and convert emails directly into notes or tasks.
 - **🎨 Highly Customizable:** Beautiful glassmorphism UI with light/dark modes, custom accent colors, and an animated background.
 - **📱 Responsive Design:** Perfect for both desktop and mobile use, featuring a bottom navigation bar on mobile devices.

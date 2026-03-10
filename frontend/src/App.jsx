@@ -205,6 +205,7 @@ function App() {
         const tabs = { '1': 'notes', '2': 'emails', '3': 'calendar', '4': 'todos', '5': 'settings' };
         if (tabs[key]) {
           e.preventDefault();
+          e.stopPropagation();
           state.setActiveTab(tabs[key]);
           return;
         }
@@ -214,15 +215,19 @@ function App() {
       if (isCmd) {
         if (key === 'n') {
           e.preventDefault();
+          e.stopPropagation();
           state.handleCreateNote();
         } else if (key === 's') {
           e.preventDefault();
+          e.stopPropagation();
           if (state.activeNote) state.saveNoteToServer(state.activeNote);
         } else if (key === 'p' && state.activeNote) {
           e.preventDefault();
+          e.stopPropagation();
           state.handleUpdateActiveNote({ isPinned: !state.activeNote.isPinned });
         } else if (key === 'f') {
           e.preventDefault();
+          e.stopPropagation();
           const searchInput = document.querySelector('.search-input');
           if (searchInput) {
             searchInput.focus();
@@ -234,12 +239,13 @@ function App() {
       // 3. Delete note
       if (e.key === 'Delete' && !isInput && state.activeNote && state.activeTab === 'notes') {
         e.preventDefault();
+        e.stopPropagation();
         state.handleDeleteNote(state.activeNote.id);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, [token]);
 
   if (!token) return <Auth password={password} setPassword={setPassword} handleLogin={handleLogin} loginError={loginError} />
