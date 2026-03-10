@@ -39,7 +39,9 @@ let notes = [
     title: 'Welcome to your Notebook',
     content: '# Hello World\n\nThis is your first note. You can use **Markdown** here!',
     category: 'General',
-    createdAt: new Date().toISOString()
+    isPinned: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 let nextNoteId = 2;
@@ -79,7 +81,7 @@ app.get('/api/notes', authenticate, (req, res) => {
 });
 
 app.post('/api/notes', authenticate, (req, res) => {
-  const { title, content, category } = req.body;
+  const { title, content, category, isPinned } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
   const newNote = {
@@ -87,7 +89,9 @@ app.post('/api/notes', authenticate, (req, res) => {
     title,
     content: content || '',
     category: category || 'General',
-    createdAt: new Date().toISOString()
+    isPinned: isPinned || false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   notes.push(newNote);
@@ -96,7 +100,7 @@ app.post('/api/notes', authenticate, (req, res) => {
 
 app.put('/api/notes/:id', authenticate, (req, res) => {
   const { id } = req.params;
-  const { title, content, category } = req.body;
+  const { title, content, category, isPinned } = req.body;
   const noteIndex = notes.findIndex(n => n.id === parseInt(id));
 
   if (noteIndex === -1) return res.status(404).json({ error: 'Note not found' });
@@ -106,6 +110,7 @@ app.put('/api/notes/:id', authenticate, (req, res) => {
     title: title || notes[noteIndex].title,
     content: content !== undefined ? content : notes[noteIndex].content,
     category: category || notes[noteIndex].category,
+    isPinned: isPinned !== undefined ? isPinned : notes[noteIndex].isPinned,
     updatedAt: new Date().toISOString()
   };
 
