@@ -1,26 +1,89 @@
-# Notebook Pro - Autonomous Edition
+# Notebook Pro
 
-An ultra-premium, highly customizable notebook application designed for speed, beauty, and organization. Developed autonomously via AI orchestration.
+Notebook Pro is an autonomous, fully-featured productivity workspace combining Markdown notes, task management, calendar planning, and email integration into a single, cohesive, and visually stunning interface.
 
-## ✨ Features
-- **Glassmorphism UI:** Stunning aesthetics with smooth animations and dynamic accent colors.
-- **Auto-Sync Notes:** Everything saves automatically. Full Markdown support with live preview.
-- **Calendar & Planning:** Organize notes by specific dates with a gorgeous fullscreen calendar.
-- **Task Management:** Built-in priority sorting, due dates, and simple checklist syncing.
-- **Pomodoro Timer:** Built-in widget for focused work sessions.
-- **IMAP Email Integration:** Connect your inbox directly in the Notebook! Export important emails straight to your Task list.
-- **One-Click Backup/Restore:** Instantly export and import your entire workspace as a single JSON file.
-- **Dark/Light Mode:** Full high-contrast support, perfect for any environment.
+## 🚀 Features
 
-## 🚀 Quick Install (Debian/Ubuntu)
-Run the following script on a fresh Debian/Ubuntu LXC or VM to automatically set up the Node.js backend, React frontend, and Nginx proxy!
+- **📝 Advanced Markdown Editor:** Full markdown support, syntax highlighting, task lists, and reading time estimation.
+- **📅 Daily Planner & Calendar:** Visually track notes and tasks against a calendar view.
+- **✅ Quick Tasks:** Keep track of high, medium, and low priority tasks.
+- **📧 Email Integration:** Connect via IMAP/SMTP to read, reply, and convert emails directly into notes or tasks.
+- **🎨 Highly Customizable:** Beautiful glassmorphism UI with light/dark modes, custom accent colors, and an animated background.
+- **📱 Responsive Design:** Perfect for both desktop and mobile use, featuring a bottom navigation bar on mobile devices.
+- **⌨️ Keyboard Shortcuts:** Navigate and edit efficiently without leaving your keyboard.
 
+## 🛠 Tech Stack
+
+### Frontend
+- React 19 + Vite
+- Framer Motion (Animations)
+- FontAwesome (Icons)
+- React Markdown + Remark GFM
+- Date-fns (Date parsing)
+
+### Backend
+- Node.js & Express
+- ImapFlow & Mailparser (IMAP Email handling)
+- Nodemailer (SMTP Email sending)
+- CORS & dotenv
+
+## 🚦 Getting Started
+
+### Prerequisites
+- Node.js (v18+ recommended)
+- npm
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Ivoozz/my-autonomous-notebook.git
+   cd my-autonomous-notebook
+   ```
+
+2. **Install Backend Dependencies:**
+   ```bash
+   cd backend
+   npm install
+   ```
+
+3. **Install Frontend Dependencies:**
+   ```bash
+   cd ../frontend
+   npm install
+   ```
+
+4. **Environment Variables:**
+   Create a `.env` file in the `backend` directory:
+   ```env
+   PORT=5000
+   AUTH_PASSWORD=your_secure_password
+   VALID_TOKEN=your_secure_token
+   ```
+
+### Running the App
+
+You can run the frontend and backend concurrently.
+
+**Start the Backend:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Ivoozz/my-autonomous-notebook/main/install-notebook.sh | bash
+cd backend
+npm start
 ```
 
-## ⚙️ Configuration
-- **Default Password:** `password123`
-- **Settings:** Access the **Settings / Admin GUI** to change your Notebook title, toggle visual effects, and configure your IMAP Email settings.
+**Start the Frontend:**
+```bash
+cd frontend
+npm run dev
+```
 
-*Enjoy the ultimate autonomous notebook experience!*
+Visit `http://localhost:5173` to access Notebook Pro!
+
+## 🔐 Authentication & Security
+The app uses a simple token-based authentication system. Enter the `AUTH_PASSWORD` defined in your `.env` on the login screen to access your vault.
+
+## 🤝 Contributing
+Contributions are welcome! Feel free to open issues or submit pull requests.
+
+## 📄 License
+This project is licensed under the MIT License.

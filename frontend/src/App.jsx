@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFileLines, faCalendarDays, faSquareCheck, faPalette, faEnvelope } from '@fortawesome/free-solid-svg-icons'
@@ -41,7 +41,7 @@ function App() {
     localStorage.setItem('notebook_accent', accentColor)
     localStorage.setItem('notebook_blobs', bgBlobs)
     localStorage.setItem('notebookTitle', notebookTitle)
-  }, [theme, accentColor, bgBlobs])
+  }, [theme, accentColor, bgBlobs, notebookTitle])
 
   useEffect(() => {
     if (token) {
@@ -53,12 +53,6 @@ function App() {
         });
     } else setLoading(false)
   }, [token])
-
-  useEffect(() => {
-    if (!activeNote || !activeNote._isDirty) return
-    const timer = setTimeout(() => saveNoteToServer(activeNote), 1200)
-    return () => clearTimeout(timer)
-  }, [activeNote?.content, activeNote?.title, activeNote?.category, activeNote?.isPinned, activeNote?.date])
 
   // --- API Handlers ---
   const fetchNotes = async () => {
@@ -85,6 +79,7 @@ function App() {
   const handleLogout = () => { setToken(''); localStorage.clear(); setNotes([]); setActiveNote(null); setActiveTab('notes'); }
 
   const saveNoteToServer = useCallback(async (note) => {
+    if (!note) return;
     setIsSaving(true)
     try {
       const res = await fetch(`${API_URL}/notes/${note.id}`, {
@@ -100,6 +95,12 @@ function App() {
     } finally { setIsSaving(false) }
   }, [token]);
 
+  useEffect(() => {
+    if (!activeNote || !activeNote._isDirty) return
+    const timer = setTimeout(() => saveNoteToServer(activeNote), 1200)
+    return () => clearTimeout(timer)
+  }, [activeNote?.content, activeNote?.title, activeNote?.category, activeNote?.isPinned, activeNote?.date, saveNoteToServer])
+
   const handleCreateNote = useCallback(async (initialDate = null) => {
     let dateStr = null;
     if (initialDate) {
@@ -109,21 +110,25 @@ function App() {
     const newNote = { title: 'New Note', content: '# New Note', category: 'General', date: dateStr }
     const res = await fetch(`${API_URL}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newNote) })
     const data = await res.json()
-    setNotes([data, ...notes]); setActiveNote(data); setActiveTab('notes'); setSidebarOpen(false);
-  }, [token, notes]);
+    setNotes(prev => [data, ...prev]); 
+    setActiveNote(data); 
+    setActiveTab('notes'); 
+    setSidebarOpen(false);
+  }, [token]);
 
   const handleUpdateActiveNote = useCallback((updates) => {
-    setActiveNote(prev => ({ ...prev, ...updates, _isDirty: true }))
+    setActiveNote(prev => prev ? ({ ...prev, ...updates, _isDirty: true }) : null)
   }, []);
 
   const handleDeleteNote = useCallback(async (id) => {
     if (!window.confirm('Delete this note?')) return
     await fetch(`${API_URL}/notes/${id}`, { method: 'DELETE', headers: { 'Authorization': token } })
     setNotes(prev => prev.filter(n => n.id !== id))
-    setActiveNote(null)
+    setActiveNote(prev => prev?.id === id ? null : prev)
   }, [token]);
 
   const toggleMarkdownTodo = (index) => {
+    if (!activeNote) return;
     const lines = activeNote.content.split('\n')
     let count = 0
     const newLines = lines.map(line => {
@@ -137,6 +142,7 @@ function App() {
   }
 
   const handleExport = () => {
+    if (!activeNote) return;
     const blob = new Blob([activeNote.content], { type: 'text/markdown' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = `${activeNote.title}.md`; a.click();
@@ -176,42 +182,45 @@ function App() {
     reader.readAsText(file);
   }
 
-  // --- Keyboard Shortcut Ref ---
-  const keyboardRef = useRef({ activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer });
+  // --- Keyboard Shortcut Logic ---
+  const keyboardRef = useRef({ activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer, setActiveTab });
+  
   useEffect(() => {
-    keyboardRef.current = { activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer };
-  }, [activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer]);
+    keyboardRef.current = { activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer, setActiveTab };
+  }, [activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer, setActiveTab]);
 
   useEffect(() => {
+    if (!token) return;
+
     const handleKeyDown = (e) => {
-      const { activeNote, activeTab, handleCreateNote, handleUpdateActiveNote, handleDeleteNote, saveNoteToServer } = keyboardRef.current;
+      const state = keyboardRef.current;
       const key = e.key.toLowerCase();
       const isCmd = e.ctrlKey || e.metaKey;
       const isAlt = e.altKey;
       const target = e.target;
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
-      // 1. Tab switching (Always works)
+      // 1. Tab switching
       if (isAlt && isCmd) {
         const tabs = { '1': 'notes', '2': 'emails', '3': 'calendar', '4': 'todos', '5': 'settings' };
         if (tabs[key]) {
           e.preventDefault();
-          setActiveTab(tabs[key]);
+          state.setActiveTab(tabs[key]);
           return;
         }
       }
 
-      // 2. Global actions (Only if not in input, OR if specific Cmd shortcuts)
+      // 2. Global actions
       if (isCmd) {
         if (key === 'n') {
           e.preventDefault();
-          handleCreateNote();
+          state.handleCreateNote();
         } else if (key === 's') {
           e.preventDefault();
-          if (activeNote) saveNoteToServer(activeNote);
-        } else if (key === 'p' && activeNote) {
+          if (state.activeNote) state.saveNoteToServer(state.activeNote);
+        } else if (key === 'p' && state.activeNote) {
           e.preventDefault();
-          handleUpdateActiveNote({ isPinned: !activeNote.isPinned });
+          state.handleUpdateActiveNote({ isPinned: !state.activeNote.isPinned });
         } else if (key === 'f') {
           e.preventDefault();
           const searchInput = document.querySelector('.search-input');
@@ -222,10 +231,10 @@ function App() {
         }
       }
 
-      // 3. Delete note (Only if NOT in input and on notes tab)
-      if (e.key === 'Delete' && !isInput && activeNote && activeTab === 'notes') {
+      // 3. Delete note
+      if (e.key === 'Delete' && !isInput && state.activeNote && state.activeTab === 'notes') {
         e.preventDefault();
-        handleDeleteNote(activeNote.id);
+        state.handleDeleteNote(state.activeNote.id);
       }
     };
 
@@ -302,6 +311,7 @@ function App() {
                 fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newTaskObj) }).then(() => fetchTodos())
               }}
               handleToggleTodo={(t) => fetch(`${API_URL}/todos/${t.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ completed: !t.completed }) }).then(() => fetchTodos())}
+              handleUpdateTodo={(id, updates) => fetch(`${API_URL}/todos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(updates) }).then(() => fetchTodos())}
               handleDeleteTodo={(id) => fetch(`${API_URL}/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } }).then(() => fetchTodos())}
             />
           )}
