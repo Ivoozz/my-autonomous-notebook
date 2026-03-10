@@ -5,7 +5,7 @@
 
 set -e
 
-echo "--- Notebook Installation Started ---"
+echo "--- Notebook Installation Started [v1.1.2] ---"
 
 # 1. Update and Install Dependencies
 echo "Installing system dependencies..."
