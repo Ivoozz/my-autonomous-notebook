@@ -7,61 +7,92 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// In-memory array for todos
+// In-memory arrays for storage
 let todos = [];
-let nextId = 1;
+let nextTodoId = 1;
 
-// GET /api/todos (list all todos)
+let notes = [
+  {
+    id: 1,
+    title: 'Welcome to your Notebook',
+    content: '# Hello World\n\nThis is your first note. You can use **Markdown** here!',
+    category: 'General',
+    createdAt: new Date().toISOString()
+  }
+];
+let nextNoteId = 2;
+
+// --- TODO Endpoints ---
 app.get('/api/todos', (req, res) => {
   res.json(todos);
 });
 
-// POST /api/todos (create a new todo)
 app.post('/api/todos', (req, res) => {
   const { task } = req.body;
-  
-  if (!task) {
-    return res.status(400).json({ error: 'Task is required' });
-  }
+  if (!task) return res.status(400).json({ error: 'Task is required' });
 
-  const newTodo = {
-    id: nextId++,
-    task,
-    completed: false
-  };
-
+  const newTodo = { id: nextTodoId++, task, completed: false };
   todos.push(newTodo);
   res.status(201).json(newTodo);
 });
 
-// PUT /api/todos/:id (update a todo's status)
 app.put('/api/todos/:id', (req, res) => {
   const { id } = req.params;
   const { completed } = req.body;
-
   const todo = todos.find(t => t.id === parseInt(id));
-
-  if (!todo) {
-    return res.status(404).json({ error: 'Todo not found' });
-  }
-
-  if (typeof completed === 'boolean') {
-    todo.completed = completed;
-  }
-
+  if (!todo) return res.status(404).json({ error: 'Todo not found' });
+  if (typeof completed === 'boolean') todo.completed = completed;
   res.json(todo);
 });
 
-// DELETE /api/todos/:id (delete a todo)
 app.delete('/api/todos/:id', (req, res) => {
   const { id } = req.params;
-  const initialLength = todos.length;
   todos = todos.filter(t => t.id !== parseInt(id));
+  res.status(204).send();
+});
 
-  if (todos.length === initialLength) {
-    return res.status(404).json({ error: 'Todo not found' });
-  }
+// --- NOTE Endpoints ---
+app.get('/api/notes', (req, res) => {
+  res.json(notes);
+});
 
+app.post('/api/notes', (req, res) => {
+  const { title, content, category } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title is required' });
+
+  const newNote = {
+    id: nextNoteId++,
+    title,
+    content: content || '',
+    category: category || 'General',
+    createdAt: new Date().toISOString()
+  };
+
+  notes.push(newNote);
+  res.status(201).json(newNote);
+});
+
+app.put('/api/notes/:id', (req, res) => {
+  const { id } = req.params;
+  const { title, content, category } = req.body;
+  const noteIndex = notes.findIndex(n => n.id === parseInt(id));
+
+  if (noteIndex === -1) return res.status(404).json({ error: 'Note not found' });
+
+  notes[noteIndex] = {
+    ...notes[noteIndex],
+    title: title || notes[noteIndex].title,
+    content: content !== undefined ? content : notes[noteIndex].content,
+    category: category || notes[noteIndex].category,
+    updatedAt: new Date().toISOString()
+  };
+
+  res.json(notes[noteIndex]);
+});
+
+app.delete('/api/notes/:id', (req, res) => {
+  const { id } = req.params;
+  notes = notes.filter(n => n.id !== parseInt(id));
   res.status(204).send();
 });
 
