@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sun, Moon } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSun, faMoon, faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 
 const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout }) => {
   return (
@@ -10,7 +11,7 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout }
         <div className="settings-row">
           <span>Theme Preference</span>
           <button className="btn-icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
           </button>
         </div>
         <div className="settings-row" style={{flexDirection:'column', alignItems:'flex-start', gap:'1.5rem'}}>
@@ -22,7 +23,9 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout }
           </div>
         </div>
         <div style={{marginTop:'3rem'}}>
-          <button className="login-btn" style={{background:'rgba(255,68,68,0.1)', color:'#ff4444', border:'1px solid rgba(255,68,68,0.2)'}} onClick={handleLogout}>Sign Out</button>
+          <button className="login-btn" style={{background:'rgba(255,68,68,0.1)', color:'#ff4444', border:'1px solid rgba(255,68,68,0.2)', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px'}} onClick={handleLogout}>
+            <FontAwesomeIcon icon={faArrowRightFromBracket} /> Sign Out
+          </button>
         </div>
       </div>
     </motion.div>

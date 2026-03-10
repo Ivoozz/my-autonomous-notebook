@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Menu, Pin, Trash2, Download } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faThumbtack, faTrashCan, faDownload } from '@fortawesome/free-solid-svg-icons';
 
 const Editor = ({ 
   activeNote, handleUpdateActiveNote, handleExport, 
@@ -11,7 +12,9 @@ const Editor = ({
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="view-container">
       <header className="editor-header">
-        <button className="menu-toggle" onClick={() => setSidebarOpen(true)}><Menu size={24} /></button>
+        <button className="menu-toggle" onClick={() => setSidebarOpen(true)}>
+          <FontAwesomeIcon icon={faBars} size="lg" />
+        </button>
         {activeNote ? (
           <>
             <input 
@@ -19,11 +22,15 @@ const Editor = ({
               value={activeNote.title} 
               onChange={(e) => handleUpdateActiveNote({ title: e.target.value })} 
             />
-            <button className="btn-icon" onClick={handleExport} title="Export .md"><Download size={18}/></button>
-            <button className="btn-icon" onClick={() => handleUpdateActiveNote({ isPinned: !activeNote.isPinned })}>
-              <Pin size={18} fill={activeNote.isPinned ? "var(--accent-color)" : "none"} />
+            <button className="btn-icon" onClick={handleExport} title="Export .md">
+              <FontAwesomeIcon icon={faDownload} />
             </button>
-            <button className="btn-icon" onClick={() => handleDeleteNote(activeNote.id)}><Trash2 size={18} /></button>
+            <button className="btn-icon" onClick={() => handleUpdateActiveNote({ isPinned: !activeNote.isPinned })}>
+              <FontAwesomeIcon icon={faThumbtack} color={activeNote.isPinned ? "var(--accent-color)" : "inherit"} />
+            </button>
+            <button className="btn-icon" onClick={() => handleDeleteNote(activeNote.id)}>
+              <FontAwesomeIcon icon={faTrashCan} />
+            </button>
           </>
         ) : <div className="title-input">Select a Note</div>}
       </header>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, Calendar as CalendarIcon, CheckSquare, Palette } from 'lucide-react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFileLines, faCalendarDays, faSquareCheck, faPalette } from '@fortawesome/free-solid-svg-icons'
 import Sidebar from './components/Sidebar'
 import Editor from './components/Editor'
 import Planner from './components/Planner'
@@ -144,10 +145,22 @@ function App() {
       />
 
       <nav className="mobile-nav">
-        <button className={`nav-item ${activeTab === 'notes' ? 'active' : ''}`} onClick={() => setActiveTab('notes')}><FileText size={24}/><span>Notes</span></button>
-        <button className={`nav-item ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}><CalendarIcon size={24}/><span>Plan</span></button>
-        <button className={`nav-item ${activeTab === 'todos' ? 'active' : ''}`} onClick={() => setActiveTab('todos')}><CheckSquare size={24}/><span>Tasks</span></button>
-        <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}><Palette size={24}/><span>Style</span></button>
+        <button className={`nav-item ${activeTab === 'notes' ? 'active' : ''}`} onClick={() => setActiveTab('notes')}>
+          <FontAwesomeIcon icon={faFileLines} style={{fontSize:'1.4rem'}} />
+          <span>Notes</span>
+        </button>
+        <button className={`nav-item ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
+          <FontAwesomeIcon icon={faCalendarDays} style={{fontSize:'1.4rem'}} />
+          <span>Plan</span>
+        </button>
+        <button className={`nav-item ${activeTab === 'todos' ? 'active' : ''}`} onClick={() => setActiveTab('todos')}>
+          <FontAwesomeIcon icon={faSquareCheck} style={{fontSize:'1.4rem'}} />
+          <span>Tasks</span>
+        </button>
+        <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+          <FontAwesomeIcon icon={faPalette} style={{fontSize:'1.4rem'}} />
+          <span>Style</span>
+        </button>
       </nav>
 
       <main className="main-content">

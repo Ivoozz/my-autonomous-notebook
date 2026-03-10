@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Trash2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashCan, faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const Tasks = ({ todos, newTodoTask, setNewTodoTask, handleAddTodo, handleToggleTodo, handleDeleteTodo }) => {
   return (
@@ -15,7 +16,9 @@ const Tasks = ({ todos, newTodoTask, setNewTodoTask, handleAddTodo, handleToggle
             value={newTodoTask} 
             onChange={e => setNewTodoTask(e.target.value)} 
           />
-          <button type="submit" className="login-btn" style={{width:'80px'}}>Add</button>
+          <button type="submit" className="login-btn" style={{width:'80px', display:'flex', alignItems:'center', justifyContent:'center'}}>
+            <FontAwesomeIcon icon={faPlus} />
+          </button>
         </form>
         <div style={{display:'flex', flexDirection:'column', gap:'8px'}}>
           {todos.map(t => (
@@ -29,12 +32,12 @@ const Tasks = ({ todos, newTodoTask, setNewTodoTask, handleAddTodo, handleToggle
               <span style={{flex:1, fontSize:'1rem', textDecoration: t.completed ? 'line-through' : 'none', opacity: t.completed ? 0.5 : 1}}>
                 {t.task}
               </span>
-              <Trash2 
-                size={18} 
-                color="#ff4444" 
-                style={{cursor:'pointer'}} 
-                onClick={() => handleDeleteTodo(t.id)} 
-              />
+              <button 
+                onClick={() => handleDeleteTodo(t.id)}
+                style={{background:'transparent', border:'none', cursor:'pointer', padding:'5px'}}
+              >
+                <FontAwesomeIcon icon={faTrashCan} color="#ff4444" />
+              </button>
             </div>
           ))}
           {todos.length === 0 && <p style={{textAlign:'center', opacity:0.5, marginTop:'2rem'}}>No tasks yet.</p>}
