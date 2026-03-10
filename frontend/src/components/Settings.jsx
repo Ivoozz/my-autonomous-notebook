@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSun, faMoon, faArrowRightFromBracket, faEye, faEyeSlash, faDownload, faUpload, faServer, faEnvelope, faKey, faUser, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faSun, faMoon, faArrowRightFromBracket, faEye, faEyeSlash, faDownload, faUpload, faServer, faEnvelope, faKey, faUser, faSave, faLock } from '@fortawesome/free-solid-svg-icons';
 
 const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, bgBlobs, setBgBlobs, handleExportAll, handleImportAll, notebookTitle, setNotebookTitle, token }) => {
   const [adminSettings, setAdminSettings] = useState({
@@ -10,7 +10,7 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
   });
   const [saveStatus, setSaveStatus] = useState('');
   
-  const [passwords, setPasswords] = useState({ old: '', new: '', confirm: '' });
+  const [pwdForm, setPwdForm] = useState({ old: '', new: '', confirm: '' });
   const [pwdStatus, setPwdStatus] = useState('');
 
   useEffect(() => {
@@ -34,16 +34,16 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
   };
 
   const handleChangePassword = async () => {
-    if (!passwords.old || !passwords.new) return setPwdStatus('Please fill all fields');
-    if (passwords.new !== passwords.confirm) return setPwdStatus('New passwords do not match');
-    if (passwords.new.length < 6) return setPwdStatus('New password must be at least 6 characters');
+    if (!pwdForm.old || !pwdForm.new) return setPwdStatus('Please fill all fields');
+    if (pwdForm.new !== pwdForm.confirm) return setPwdStatus('New passwords do not match');
+    if (pwdForm.new.length < 6) return setPwdStatus('New password must be at least 6 characters');
 
     setPwdStatus('Updating...');
     try {
       const res = await fetch('/api/admin/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': token },
-        body: JSON.stringify({ oldPassword: passwords.old, newPassword: passwords.new })
+        body: JSON.stringify({ oldPassword: pwdForm.old, newPassword: pwdForm.new })
       });
       const data = await res.json();
       if (res.ok) {
@@ -152,22 +152,22 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
               type="password" 
               className="search-input" 
               placeholder="Current Vault Password" 
-              value={passwords.old} 
-              onChange={e => setPasswords({...passwords, old: e.target.value})} 
+              value={pwdForm.old} 
+              onChange={e => setPwdForm({...pwdForm, old: e.target.value})} 
             />
             <input 
               type="password" 
               className="search-input" 
               placeholder="New Vault Password" 
-              value={passwords.new} 
-              onChange={e => setPasswords({...passwords, new: e.target.value})} 
+              value={pwdForm.new} 
+              onChange={e => setPwdForm({...pwdForm, new: e.target.value})} 
             />
             <input 
               type="password" 
               className="search-input" 
               placeholder="Confirm New Password" 
-              value={passwords.confirm} 
-              onChange={e => setPasswords({...passwords, confirm: e.target.value})} 
+              value={pwdForm.confirm} 
+              onChange={e => setPwdForm({...pwdForm, confirm: e.target.value})} 
             />
           </div>
           <button 
