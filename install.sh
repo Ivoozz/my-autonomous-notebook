@@ -10,38 +10,56 @@ echo "--- Notebook Installation Started ---"
 # 1. Update and Install Dependencies
 echo "Installing system dependencies..."
 apt-get update
-apt-get install -y nginx nodejs npm apache2-utils curl
+apt-get install -y nginx nodejs npm apache2-utils curl git
 
-# 2. Interactive User Creation for Password Protection
+# 2. Repository Setup
+INSTALL_DIR="/opt/notebook"
+REPO_URL="https://github.com/Ivoozz/my-autonomous-notebook.git"
+
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo "Cloning repository to $INSTALL_DIR..."
+    git clone "$REPO_URL" "$INSTALL_DIR"
+fi
+
+cd "$INSTALL_DIR"
+
+# 3. Interactive User Creation for Password Protection
 echo ""
 echo "--- Security Setup ---"
-read -p "Enter username for site access: " NOTEBOOK_USER
-htpasswd -c /etc/nginx/.htpasswd "$NOTEBOOK_USER"
+if [ ! -f /etc/nginx/.htpasswd ]; then
+    read -p "Enter username for site access: " NOTEBOOK_USER
+    htpasswd -c /etc/nginx/.htpasswd "$NOTEBOOK_USER"
+else
+    echo "Nginx password file already exists. Skipping user creation."
+    NOTEBOOK_USER=$(awk -F: '{print $1}' /etc/nginx/.htpasswd | head -n 1)
+fi
 
-# 3. Setup Backend
+# 4. Setup Backend
 echo "Setting up backend..."
 cd backend
 npm install
 # Simple systemd service for backend (optional, running in background for now)
+# We use pkill to stop any existing instance before restarting
+pkill -f "node index.js" || true
 nohup node index.js > backend.log 2>&1 &
 echo "Backend started in background (PID: $!)"
 cd ..
 
-# 4. Setup Frontend
+# 5. Setup Frontend
 echo "Building frontend..."
 cd frontend
 npm install
 npm run build
 cd ..
 
-# 5. Configure Nginx
+# 6. Configure Nginx
 echo "Configuring Nginx..."
 cat <<EOF > /etc/nginx/sites-available/notebook
 server {
     listen 80;
     server_name _;
 
-    root $(pwd)/frontend/dist;
+    root $INSTALL_DIR/frontend/dist;
     index index.html;
 
     # Password Protection
@@ -67,9 +85,9 @@ ln -sf /etc/nginx/sites-available/notebook /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 # Adjust permissions for Nginx
-chmod -R 755 $(pwd)
+chmod -R 755 "$INSTALL_DIR"
 
-# 6. Restart Nginx
+# 7. Restart Nginx
 echo "Restarting Nginx..."
 systemctl restart nginx || service nginx restart
 
