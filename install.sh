@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Notebook One-Stop Installer for Debian LXC
-# Sets up Backend, Frontend (Nginx), and Password Protection
+# Sets up Backend, Frontend (Nginx), and Systemd Auto-start
 
 set -e
 
@@ -13,32 +13,54 @@ apt-get update
 apt-get install -y nginx nodejs npm curl git
 
 # 2. Repository Setup
-# We'll use the current directory we are in
-INSTALL_DIR=$(pwd)
-echo "Current installation directory: $INSTALL_DIR"
+# We use a fixed path for the autostart service to work reliably
+INSTALL_DIR="/opt/notebook"
+REPO_URL="https://github.com/Ivoozz/my-autonomous-notebook.git"
 
-# 3. Security Setup (Application Level)
-echo ""
-echo "--- Security Setup ---"
-echo "The app now uses a built-in login page."
-echo "Default password is set to 'password123'."
-echo "To change it, edit $INSTALL_DIR/backend/index.js"
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo "Cloning repository to $INSTALL_DIR..."
+    git clone "$REPO_URL" "$INSTALL_DIR"
+else
+    echo "Directory $INSTALL_DIR already exists. Forcing update to latest version..."
+    cd "$INSTALL_DIR"
+    git fetch origin
+    git reset --hard origin/main
+fi
 
-# 4. Setup Backend
+cd "$INSTALL_DIR"
+
+# 3. Setup Backend
 echo "Setting up backend..."
 cd "$INSTALL_DIR/backend"
 npm install
-# pkill to ensure we don't have multiple instances
-pkill -f "node index.js" || true
-# Run in background and ensure it persists
-nohup node index.js > backend.log 2>&1 &
-echo "Backend started in background (PID: $!)"
+
+# 4. Create Systemd Service for Auto-start
+echo "Configuring Systemd service..."
+cat <<EOF > /etc/systemd/system/notebook-backend.service
+[Unit]
+Description=Notebook Backend Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=$INSTALL_DIR/backend
+ExecStart=/usr/bin/node index.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable notebook-backend.service
+systemctl restart notebook-backend.service
 
 # 5. Setup Frontend
 echo "Building frontend..."
 cd "$INSTALL_DIR/frontend"
 npm install
-# Fix the API URL to be relative before building
+# Ensure API_URL is relative
 sed -i "s|const API_URL = .*|const API_URL = '/api'|g" src/App.jsx
 npm run build
 
@@ -70,12 +92,8 @@ EOF
 ln -sf /etc/nginx/sites-available/notebook /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
-# Adjust permissions for Nginx to access the directory
-# IMPORTANT: Nginx user (www-data) needs search (+) permission on all parent directories
-# Since we are likely in /root, this is risky. Let's suggest moving it if it fails.
+# Adjust permissions
 chmod -R 755 "$INSTALL_DIR"
-# Also need to make sure the parent directory is accessible
-chmod 755 /root || true
 
 # 7. Restart Nginx
 echo "Restarting Nginx..."
@@ -85,3 +103,4 @@ echo ""
 echo "--- Installation Complete! ---"
 echo "Access your notebook at: http://$(hostname -I | awk '{print $1}')"
 echo "Default Password: password123"
+echo "Autostart service 'notebook-backend' is active and enabled."
