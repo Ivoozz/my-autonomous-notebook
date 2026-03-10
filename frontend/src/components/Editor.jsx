@@ -56,7 +56,7 @@ const Editor = ({
               <input 
                 type="text"
                 placeholder="Folder"
-                className="date-input-ghost"
+                className="standard-input"
                 style={{width: '100px', fontSize: '0.8rem'}}
                 value={activeNote.folder || ''}
                 onChange={(e) => handleUpdateActiveNote({ folder: e.target.value })}
@@ -65,7 +65,7 @@ const Editor = ({
               <input 
                 type="text"
                 placeholder="Category"
-                className="date-input-ghost"
+                className="standard-input"
                 style={{width: '100px', fontSize: '0.8rem'}}
                 value={activeNote.category || ''}
                 onChange={(e) => handleUpdateActiveNote({ category: e.target.value })}

@@ -128,13 +128,13 @@ const Emails = ({ token, handleAddTodo, onCreateNote }) => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <button className="login-btn" style={{ width: 'auto', padding: '0.6rem 1rem', fontSize: '0.85rem' }} onClick={() => setReplyingTo(email)}>
+                  <button className="login-btn" style={{ width: 'auto', height: '42px', padding: '0 1.2rem', fontSize: '0.85rem' }} onClick={() => setReplyingTo(email)}>
                     <FontAwesomeIcon icon={faReply} style={{ marginRight: '8px' }} /> Reply
                   </button>
-                  <button className="login-btn" style={{ width: 'auto', padding: '0.6rem 1rem', fontSize: '0.85rem', background: 'var(--glass-highlight)', color: 'var(--text-color)', border: '1px solid var(--glass-border)' }} onClick={() => exportToTask(email)}>
+                  <button className="login-btn" style={{ width: 'auto', height: '42px', padding: '0 1.2rem', fontSize: '0.85rem', background: 'var(--glass-highlight)', color: 'var(--text-color)', border: '1px solid var(--glass-border)' }} onClick={() => exportToTask(email)}>
                     <FontAwesomeIcon icon={faPlus} style={{ marginRight: '8px' }} /> Task
                   </button>
-                  <button className="login-btn" style={{ width: 'auto', padding: '0.6rem 1rem', fontSize: '0.85rem', background: 'var(--glass-highlight)', color: 'var(--text-color)', border: '1px solid var(--glass-border)' }} onClick={() => exportToNote(email)}>
+                  <button className="login-btn" style={{ width: 'auto', height: '42px', padding: '0 1.2rem', fontSize: '0.85rem', background: 'var(--glass-highlight)', color: 'var(--text-color)', border: '1px solid var(--glass-border)' }} onClick={() => exportToNote(email)}>
                     <FontAwesomeIcon icon={faNoteSticky} style={{ marginRight: '8px' }} /> Note
                   </button>
                 </div>

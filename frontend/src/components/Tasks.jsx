@@ -84,8 +84,8 @@ const Tasks = ({ todos, handleAddTodo, handleToggleTodo, handleDeleteTodo, handl
         
         <form style={{display:'flex', gap:'10px', margin:'1.5rem 0', flexWrap: 'wrap'}} onSubmit={onSubmit}>
           <input 
-            className="search-input" 
-            style={{background:'rgba(255,255,255,0.05)', border:'1px solid var(--glass-border)', flex: 1, minWidth: '200px'}} 
+            className="standard-input" 
+            style={{flex: 1, minWidth: '200px', paddingLeft: '1.2rem'}} 
             placeholder="What needs to be done?" 
             value={task} 
             onChange={e => setTask(e.target.value)} 
@@ -106,7 +106,7 @@ const Tasks = ({ todos, handleAddTodo, handleToggleTodo, handleDeleteTodo, handl
             <option value="Medium">Medium Priority</option>
             <option value="Low">Low Priority</option>
           </select>
-          <button type="submit" className="login-btn" style={{width:'80px', display:'flex', alignItems:'center', justifyContent:'center'}}>
+          <button type="submit" className="login-btn" style={{width:'80px', height:'42px', display:'flex', alignItems:'center', justifyContent:'center', padding:0}}>
             <FontAwesomeIcon icon={faPlus} />
           </button>
         </form>

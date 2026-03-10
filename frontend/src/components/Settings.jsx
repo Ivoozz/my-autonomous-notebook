@@ -66,7 +66,7 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
           <span>Notebook Display Name</span>
           <input 
             type="text" 
-            className="search-input" 
+            className="standard-input" 
             value={notebookTitle} 
             onChange={(e) => setNotebookTitle(e.target.value)} 
             placeholder="Notebook Name"
@@ -102,27 +102,27 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
         <div style={{display:'grid', gap:'15px', marginBottom:'1.5rem', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))'}}>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
             <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> IMAP Host</div>
-            <input className="search-input" value={adminSettings.imapHost} onChange={e => setAdminSettings({...adminSettings, imapHost: e.target.value})} placeholder="imap.gmail.com" />
+            <input className="standard-input" value={adminSettings.imapHost} onChange={e => setAdminSettings({...adminSettings, imapHost: e.target.value})} placeholder="imap.gmail.com" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
             <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> IMAP Port</div>
-            <input className="search-input" type="number" value={adminSettings.imapPort} onChange={e => setAdminSettings({...adminSettings, imapPort: parseInt(e.target.value)})} placeholder="993" />
+            <input className="standard-input" type="number" value={adminSettings.imapPort} onChange={e => setAdminSettings({...adminSettings, imapPort: parseInt(e.target.value)})} placeholder="993" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
             <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> SMTP Host</div>
-            <input className="search-input" value={adminSettings.smtpHost} onChange={e => setAdminSettings({...adminSettings, smtpHost: e.target.value})} placeholder="smtp.gmail.com" />
+            <input className="standard-input" value={adminSettings.smtpHost} onChange={e => setAdminSettings({...adminSettings, smtpHost: e.target.value})} placeholder="smtp.gmail.com" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
             <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faServer} /> SMTP Port</div>
-            <input className="search-input" type="number" value={adminSettings.smtpPort} onChange={e => setAdminSettings({...adminSettings, smtpPort: parseInt(e.target.value)})} placeholder="465" />
+            <input className="standard-input" type="number" value={adminSettings.smtpPort} onChange={e => setAdminSettings({...adminSettings, smtpPort: parseInt(e.target.value)})} placeholder="465" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
             <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faUser} /> Email Username</div>
-            <input className="search-input" value={adminSettings.imapUser} onChange={e => setAdminSettings({...adminSettings, imapUser: e.target.value, smtpUser: e.target.value})} placeholder="user@example.com" />
+            <input className="standard-input" value={adminSettings.imapUser} onChange={e => setAdminSettings({...adminSettings, imapUser: e.target.value, smtpUser: e.target.value})} placeholder="user@example.com" />
           </div>
           <div className="glass-panel" style={{padding:'1rem', borderRadius:'var(--radius-md)'}}>
             <div style={{fontSize:'0.8rem', marginBottom:'5px', opacity:0.7}}><FontAwesomeIcon icon={faKey} /> Email Password</div>
-            <input className="search-input" type="password" value={adminSettings.imapPass} onChange={e => setAdminSettings({...adminSettings, imapPass: e.target.value, smtpPass: e.target.value})} placeholder="••••••••" />
+            <input className="standard-input" type="password" value={adminSettings.imapPass} onChange={e => setAdminSettings({...adminSettings, imapPass: e.target.value, smtpPass: e.target.value})} placeholder="••••••••" />
           </div>
         </div>
 
@@ -135,7 +135,7 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
              <input type="checkbox" checked={adminSettings.smtpTls} onChange={e => setAdminSettings({...adminSettings, smtpTls: e.target.checked})} />
              <span>SMTP TLS</span>
            </label>
-           <button className="login-btn" style={{width:'auto', padding:'0.8rem 2rem'}} onClick={handleSaveSettings}>
+           <button className="login-btn" style={{width:'auto', height:'42px', padding:'0 2rem'}} onClick={handleSaveSettings}>
              <FontAwesomeIcon icon={faSave} style={{marginRight:'8px'}} /> Save Settings
            </button>
            {saveStatus && <span style={{fontSize:'0.9rem', color: saveStatus.includes('Failed') ? '#ff4444' : 'var(--accent-color)'}}>{saveStatus}</span>}
@@ -150,21 +150,21 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
           <div style={{display:'grid', gap:'15px', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', marginBottom:'1.5rem'}}>
             <input 
               type="password" 
-              className="search-input" 
+              className="standard-input" 
               placeholder="Current Vault Password" 
               value={pwdForm.old} 
               onChange={e => setPwdForm({...pwdForm, old: e.target.value})} 
             />
             <input 
               type="password" 
-              className="search-input" 
+              className="standard-input" 
               placeholder="New Vault Password" 
               value={pwdForm.new} 
               onChange={e => setPwdForm({...pwdForm, new: e.target.value})} 
             />
             <input 
               type="password" 
-              className="search-input" 
+              className="standard-input" 
               placeholder="Confirm New Password" 
               value={pwdForm.confirm} 
               onChange={e => setPwdForm({...pwdForm, confirm: e.target.value})} 
@@ -172,7 +172,7 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
           </div>
           <button 
             className="login-btn" 
-            style={{width:'auto', padding:'0.8rem 2rem', background:'rgba(255, 68, 68, 0.1)', color:'#ff4444', border:'1px solid rgba(255, 68, 68, 0.3)'}}
+            style={{width:'auto', height:'42px', padding:'0 2rem', background:'rgba(255, 68, 68, 0.1)', color:'#ff4444', border:'1px solid rgba(255, 68, 68, 0.3)'}}
             onClick={handleChangePassword}
           >
             Update Vault Password
@@ -182,17 +182,17 @@ const Settings = ({ theme, setTheme, accentColor, setAccentColor, handleLogout, 
 
         <h2 style={{marginBottom:'1rem', marginTop:'1rem', fontSize:'1.2rem', letterSpacing:'-0.5px'}}>Data & Backup</h2>
         <div style={{display:'flex', gap:'15px', marginBottom:'2rem', flexWrap:'wrap'}}>
-          <button className="login-btn" style={{flex:1, background:'var(--glass-bg)', color:'var(--text-color)', border:'1px solid var(--glass-border)'}} onClick={handleExportAll}>
+          <button className="login-btn" style={{flex:1, height:'42px', padding:0, background:'var(--glass-bg)', color:'var(--text-color)', border:'1px solid var(--glass-border)'}} onClick={handleExportAll}>
             <FontAwesomeIcon icon={faDownload} style={{marginRight:'8px'}}/> Export Backup
           </button>
-          <label className="login-btn" style={{flex:1, background:'var(--glass-bg)', color:'var(--text-color)', border:'1px solid var(--glass-border)', cursor:'pointer'}}>
+          <label className="login-btn" style={{flex:1, height:'42px', padding:0, background:'var(--glass-bg)', color:'var(--text-color)', border:'1px solid var(--glass-border)', cursor:'pointer'}}>
             <FontAwesomeIcon icon={faUpload} style={{marginRight:'8px'}}/> Import Backup
             <input type="file" accept=".json" style={{display:'none'}} onChange={handleImportAll} />
           </label>
         </div>
 
         <div style={{marginTop:'3rem', paddingTop:'2rem', borderTop:'1px solid var(--glass-border)'}}>
-          <button className="login-btn" style={{background:'rgba(255,68,68,0.1)', color:'#ff4444', border:'1px solid rgba(255,68,68,0.2)', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px'}} onClick={handleLogout}>
+          <button className="login-btn" style={{background:'rgba(255,68,68,0.1)', color:'#ff4444', height:'42px', padding:0, border:'1px solid rgba(255,68,68,0.2)', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px'}} onClick={handleLogout}>
             <FontAwesomeIcon icon={faArrowRightFromBracket} /> Sign Out
           </button>
         </div>

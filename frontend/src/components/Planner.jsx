@@ -26,7 +26,7 @@ const Planner = ({ calendarDate, setCalendarDate, notes, onNoteClick, onCreateNo
             </div>
           ))}
         </div>
-        <button className="login-btn" style={{marginTop:'1.5rem', gap:'10px'}} onClick={() => onCreateNote(calendarDate)}>
+        <button className="login-btn" style={{marginTop:'1.5rem', gap:'10px', width: 'auto'}} onClick={() => onCreateNote(calendarDate)}>
           <FontAwesomeIcon icon={faPlus} />
           <span>New note for this day</span>
         </button>

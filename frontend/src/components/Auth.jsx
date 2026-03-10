@@ -18,20 +18,20 @@ const Auth = ({ password, setPassword, handleLogin, loginError }) => {
         <h1 style={{fontSize:'2.5rem', marginBottom:'0.5rem', fontWeight:900, letterSpacing:'-2px'}}>Notebook Pro</h1>
         <p style={{color:'var(--text-dim)', marginBottom:'2.5rem'}}>Securely enter your vault.</p>
         <form onSubmit={handleLogin}>
-          <input 
-            type="password" 
-            className="login-input" 
-            placeholder="Vault Password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            autoFocus 
+          <input
+            type="password"
+            className="standard-input"
+            placeholder="Vault Password"
+            style={{textAlign:'center', letterSpacing:'4px', marginBottom:'1.5rem'}}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoFocus
           />
           {loginError && <div style={{color:'#ff4444', marginBottom:'1rem', fontWeight:'600'}}>{loginError}</div>}
-          <button type="submit" className="login-btn">
+          <button type="submit" className="login-btn" style={{height:'42px', padding:0}}>
             Unlock Vault
           </button>
-        </form>
-      </motion.div>
+        </form>      </motion.div>
     </div>
   );
 };

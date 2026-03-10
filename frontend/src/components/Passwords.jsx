@@ -103,7 +103,7 @@ const Passwords = ({ token, masterPassword }) => {
           <h2 style={{display:'flex', alignItems:'center', gap:'10px'}}>
             <FontAwesomeIcon icon={faLock} color="var(--accent-color)" /> Password Vault
           </h2>
-          <button className="login-btn" style={{width: 'auto', padding: '0.6rem 1.2rem'}} onClick={() => setShowAddForm(!showAddForm)}>
+          <button className="login-btn" style={{width: 'auto', height: '42px', padding: '0 1.2rem'}} onClick={() => setShowAddForm(!showAddForm)}>
             <FontAwesomeIcon icon={faPlus} style={{marginRight: '8px'}} /> Add Entry
           </button>
         </div>
@@ -118,11 +118,11 @@ const Passwords = ({ token, masterPassword }) => {
               style={{display:'flex', flexDirection:'column', gap:'15px', marginBottom:'2rem', padding:'1.5rem', background:'rgba(0,0,0,0.2)', borderRadius:'var(--radius-md)', border:'1px solid var(--glass-border)'}}
             >
               <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:'15px'}}>
-                <input className="search-input" placeholder="Title (e.g. Google)" value={newTitle} onChange={e => setNewTitle(e.target.value)} required />
-                <input className="search-input" placeholder="Username / Email" value={newUsername} onChange={e => setNewUsername(e.target.value)} />
-                <input className="search-input" type="password" placeholder="Password" value={newPasswordValue} onChange={e => setNewPasswordValue(e.target.value)} required />
+                <input className="standard-input" placeholder="Title (e.g. Google)" value={newTitle} onChange={e => setNewTitle(e.target.value)} required />
+                <input className="standard-input" placeholder="Username / Email" value={newUsername} onChange={e => setNewUsername(e.target.value)} />
+                <input className="standard-input" type="password" placeholder="Password" value={newPasswordValue} onChange={e => setNewPasswordValue(e.target.value)} required />
               </div>
-              <button type="submit" className="login-btn" style={{alignSelf:'flex-end', width:'auto', padding:'0.6rem 2rem'}}>Save Securely</button>
+              <button type="submit" className="login-btn" style={{alignSelf:'flex-end', width:'auto', height:'42px', padding:'0 2rem'}}>Save Securely</button>
             </motion.form>
           )}
         </AnimatePresence>

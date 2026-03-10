@@ -72,9 +72,6 @@ const Sidebar = ({
         <button className={`btn-icon ${activeTab === 'passwords' ? 'active' : ''}`} onClick={() => setActiveTab('passwords')} title="Vault">
           <FontAwesomeIcon icon={faLock} />
         </button>
-        <button className={`btn-icon ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} title="Settings">
-          <FontAwesomeIcon icon={faPalette} />
-        </button>
       </div>
 
       <div className="search-container">
@@ -83,14 +80,14 @@ const Sidebar = ({
             <FontAwesomeIcon icon={faMagnifyingGlass} style={{position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', opacity:0.5}} />
             <input 
               type="text" 
-              className="search-input" 
+              className="standard-input" 
               placeholder="Search..." 
               style={{paddingLeft:'35px'}}
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)} 
             />
           </div>
-          <button className="btn-icon" onClick={toggleSort} title={`Sort: ${sortMode}`} style={{width: '42px', height: '42px', fontSize: '0.8rem', fontWeight: 'bold'}}>
+          <button className="btn-icon" onClick={toggleSort} title={`Sort: ${sortMode}`} style={{fontSize: '0.8rem', fontWeight: 'bold'}}>
             {sortMode.slice(0, 3)}
           </button>
         </div>
@@ -130,10 +127,13 @@ const Sidebar = ({
       </div>
 
       <div className="sidebar-footer" style={{display:'flex', gap:'10px', padding:'1.5rem'}}>
-        <button className="btn-icon" style={{width:'50px'}} onClick={() => setShowHelp(true)}>
+        <button className="btn-icon" onClick={() => setShowHelp(true)} title="Help">
           <FontAwesomeIcon icon={faCircleQuestion} />
         </button>
-        <button className="login-btn" style={{flex:1, padding:'0.6rem'}} onClick={() => onCreateNote()}>
+        <button className={`btn-icon ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} title="Settings">
+          <FontAwesomeIcon icon={faPalette} />
+        </button>
+        <button className="login-btn" style={{flex:1, height:'42px', padding:'0'}} onClick={() => onCreateNote()}>
           <FontAwesomeIcon icon={faPlus} style={{marginRight:'8px'}} /> New Note
         </button>
       </div>
