@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Notebook Ultimate Installer [v1.5.1]
+# Notebook Ultimate Installer [v1.5.1.rev1]
+# Unique ID: 773140500
 # Optimized for Debian LXC, Nginx Proxy, and Systemd Autostart
 
 set -e
