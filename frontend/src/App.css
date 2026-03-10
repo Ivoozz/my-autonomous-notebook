@@ -22,15 +22,15 @@
 }
 
 body.light-mode {
-  --bg-color: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(0, 0, 0, 0.2);
-  --glass-highlight: rgba(255, 255, 255, 1);
-  --text-color: #000000;
-  --text-dim: #333333;
+  --bg-color: #f8f9fa;
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.15);
+  --glass-highlight: rgba(0, 0, 0, 0.05);
+  --text-color: #1a1a1a;
+  --text-dim: #555555;
   --card-bg: #ffffff;
-  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.12);
 }
 
 body.light-mode .sidebar-header h2,
@@ -43,20 +43,73 @@ body.light-mode .markdown-editor,
 body.light-mode .preview-pane,
 body.light-mode .date-input-ghost,
 body.light-mode .react-calendar__navigation button,
-body.light-mode .react-calendar__tile {
-  color: #000000 !important;
+body.light-mode .react-calendar__tile,
+body.light-mode .help-content h1,
+body.light-mode .help-content h3,
+body.light-mode .help-content li,
+body.light-mode .glass-panel h1,
+body.light-mode .glass-panel h2,
+body.light-mode .glass-panel span,
+body.light-mode .note-item span,
+body.light-mode .note-item div {
+  color: #1a1a1a !important;
+}
+
+body.light-mode .preview-pane {
+  background: rgba(0, 0, 0, 0.02);
 }
 
 body.light-mode .btn-icon,
 body.light-mode .date-input-ghost {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+body.light-mode .btn-icon:hover {
   background: #f0f0f0;
-  border-color: #cccccc;
+}
+
+body.light-mode .btn-icon.active {
+  background: var(--accent-color);
+  color: #ffffff !important;
+}
+
+body.light-mode .btn-icon.active svg {
+  color: #ffffff !important;
 }
 
 body.light-mode .search-input {
-  background: #f5f5f5;
-  color: #000000;
-  border-color: #cccccc;
+  background: #ffffff;
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .glass-panel {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .help-content {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .sidebar-footer {
+  background: #ffffff;
+}
+
+body.light-mode .note-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light-mode .note-item.active {
+  background: #ffffff;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+body.light-mode .save-dot {
+  border: 1px solid rgba(0,0,0,0.1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
