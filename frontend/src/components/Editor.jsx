@@ -88,6 +88,12 @@ const Editor = ({
                 className="markdown-editor" 
                 value={activeNote.content} 
                 onChange={(e) => handleUpdateActiveNote({ content: e.target.value })} 
+                onKeyDown={(e) => {
+                  if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); insertText('**', '**'); }
+                  if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); insertText('_', '_'); }
+                  if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); insertText('`', '`'); }
+                  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); insertText('[', '](url)'); }
+                }}
                 placeholder="Start writing..." 
                 style={{flex: 1}}
               />

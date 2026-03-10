@@ -49,6 +49,43 @@ function App() {
   }, [token])
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Global shortcuts
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        handleCreateNote();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (activeNote) saveNoteToServer(activeNote);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'p' && activeNote) {
+        e.preventDefault();
+        handleUpdateActiveNote({ isPinned: !activeNote.isPinned });
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        document.querySelector('.search-input')?.focus();
+      }
+      if (e.key === 'Delete' && activeNote && activeTab === 'notes') {
+        handleDeleteNote(activeNote.id);
+      }
+
+      // Tab switching
+      if (e.altKey && (e.ctrlKey || e.metaKey)) {
+        if (e.key === '1') setActiveTab('notes');
+        if (e.key === '2') setActiveTab('emails');
+        if (e.key === '3') setActiveTab('calendar');
+        if (e.key === '4') setActiveTab('todos');
+        if (e.key === '5') setActiveTab('settings');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [token, activeNote, activeTab]);
+
+  useEffect(() => {
     if (!activeNote || !activeNote._isDirty) return
     const timer = setTimeout(() => saveNoteToServer(activeNote), 1200)
     return () => clearTimeout(timer)
