@@ -24,12 +24,11 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [theme, setTheme] = useState(localStorage.getItem('notebook_theme') || 'dark')
   const [accentColor, setAccentColor] = useState(localStorage.getItem('notebook_accent') || '#7c4dff')
+  const [bgBlobs, setBgBlobs] = useState(localStorage.getItem('notebook_blobs') !== 'false')
   const [isSaving, setIsSaving] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [todos, setTodos] = useState([])
-  const [newTodoTask, setNewTodoTask] = useState('')
   const [calendarDate, setCalendarDate] = useState(new Date())
-  const [sortByCategory, setSortByCategory] = useState(false)
 
   // --- Effects ---
   useEffect(() => {
@@ -37,7 +36,8 @@ function App() {
     document.documentElement.style.setProperty('--accent-color', accentColor)
     localStorage.setItem('notebook_theme', theme)
     localStorage.setItem('notebook_accent', accentColor)
-  }, [theme, accentColor])
+    localStorage.setItem('notebook_blobs', bgBlobs)
+  }, [theme, accentColor, bgBlobs])
 
   useEffect(() => {
     if (token) {
@@ -49,7 +49,7 @@ function App() {
     if (!activeNote || !activeNote._isDirty) return
     const timer = setTimeout(() => saveNoteToServer(activeNote), 1200)
     return () => clearTimeout(timer)
-  }, [activeNote?.content, activeNote?.title])
+  }, [activeNote?.content, activeNote?.title, activeNote?.category, activeNote?.isPinned, activeNote?.date])
 
   // --- API Handlers ---
   const fetchNotes = async () => {
@@ -92,7 +92,12 @@ function App() {
   }
 
   const handleCreateNote = async (initialDate = null) => {
-    const newNote = { title: 'New Note', content: '# New Note', category: 'General', date: initialDate ? initialDate.toISOString() : null }
+    let dateStr = null;
+    if (initialDate) {
+      const tzOffset = initialDate.getTimezoneOffset() * 60000;
+      dateStr = (new Date(initialDate.getTime() - tzOffset)).toISOString().split('T')[0];
+    }
+    const newNote = { title: 'New Note', content: '# New Note', category: 'General', date: dateStr }
     const res = await fetch(`${API_URL}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newNote) })
     const data = await res.json()
     setNotes([data, ...notes]); setActiveNote(data); setActiveTab('notes'); setSidebarOpen(false);
@@ -128,23 +133,58 @@ function App() {
     const a = document.createElement('a'); a.href = url; a.download = `${activeNote.title}.md`; a.click();
   }
 
+  const handleExportAll = () => {
+    const data = JSON.stringify({ notes, todos }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'notebook_backup.json'; a.click();
+  }
+
+  const handleImportAll = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+        if (data.notes) {
+          for (const n of data.notes) {
+            await fetch(`${API_URL}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(n) });
+          }
+        }
+        if (data.todos) {
+          for (const t of data.todos) {
+            await fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(t) });
+          }
+        }
+        fetchNotes();
+        fetchTodos();
+        alert('Import successful!');
+      } catch (err) {
+        alert('Failed to parse backup file');
+      }
+    };
+    reader.readAsText(file);
+  }
+
   if (!token) return <Auth password={password} setPassword={setPassword} handleLogin={handleLogin} loginError={loginError} />
   if (loading) return <div className="app-container" style={{justifyContent:'center', alignItems:'center'}}>Loading...</div>
 
   return (
     <div className="app-container">
-      <div className="bg-blobs">
-        <div className="blob blob-1" />
-        <div className="blob blob-2" />
-        <div className="blob blob-3" />
-      </div>
+      {bgBlobs && (
+        <div className="bg-blobs">
+          <div className="blob blob-1" />
+          <div className="blob blob-2" />
+          <div className="blob blob-3" />
+        </div>
+      )}
 
       <Sidebar 
         notes={notes} activeNoteId={activeNote?.id} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
         onNoteClick={(note) => { setActiveNote(note); setActiveTab('notes'); }}
         onCreateNote={handleCreateNote} activeTab={activeTab} setActiveTab={setActiveTab}
         sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
-        sortByCategory={sortByCategory} setSortByCategory={setSortByCategory}
       />
 
       <nav className="mobile-nav">
@@ -184,10 +224,9 @@ function App() {
           )}
           {activeTab === 'todos' && (
             <Tasks 
-              todos={todos} newTodoTask={newTodoTask} setNewTodoTask={setNewTodoTask}
-              handleAddTodo={(e) => {
-                e.preventDefault(); if(!newTodoTask.trim()) return;
-                fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ task: newTodoTask }) }).then(() => { fetchTodos(); setNewTodoTask(''); })
+              todos={todos}
+              handleAddTodo={(newTaskObj) => {
+                fetch(`${API_URL}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify(newTaskObj) }).then(() => fetchTodos())
               }}
               handleToggleTodo={(t) => fetch(`${API_URL}/todos/${t.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': token }, body: JSON.stringify({ completed: !t.completed }) }).then(() => fetchTodos())}
               handleDeleteTodo={(id) => fetch(`${API_URL}/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': token } }).then(() => fetchTodos())}
@@ -197,6 +236,8 @@ function App() {
             <Settings 
               theme={theme} setTheme={setTheme} accentColor={accentColor}
               setAccentColor={setAccentColor} handleLogout={handleLogout}
+              bgBlobs={bgBlobs} setBgBlobs={setBgBlobs}
+              handleExportAll={handleExportAll} handleImportAll={handleImportAll}
             />
           )}
         </AnimatePresence>

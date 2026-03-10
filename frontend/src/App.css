@@ -321,8 +321,23 @@ body.light-mode .sidebar-header h2 { background: linear-gradient(135deg, #000 0%
   border-color: rgba(255,255,255,0.3);
 }
 .btn-icon:active { transform: translateY(0) scale(0.95); }
-.btn-icon.active { background: var(--accent-color); color: white; border-color: transparent; box-shadow: 0 8px 25px var(--accent-glow); }
+.btn-icon.active { background: var(--accent-color); color: #ffffff !important; border-color: transparent; box-shadow: 0 8px 25px var(--accent-glow); }
+.btn-icon.active svg { color: #ffffff !important; fill: #ffffff !important; }
 
+body.light-mode .btn-icon.active {
+  background: var(--accent-color);
+  color: #ffffff !important;
+}
+
+body.light-mode .btn-icon.active svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+.nav-item.active { color: var(--accent-color); text-shadow: 0 0 15px var(--accent-glow); }
+
+.save-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-color); margin-right: 10px; box-shadow: 0 0 10px var(--accent-glow); transition: all 0.3s; }
+.save-dot.saving { background: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); animation: pulse 1s infinite; }
 .login-btn {
   width: 100%; padding: 1.2rem; background: var(--accent-color); color: white;
   border: none; border-radius: var(--radius-md); font-size: 1.05rem; font-weight: 800; 

@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faThumbtack, faTrashCan, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faThumbtack, faTrashCan, faDownload, faBold, faItalic, faCode, faLink } from '@fortawesome/free-solid-svg-icons';
 
 const Editor = ({ 
   activeNote, handleUpdateActiveNote, handleExport, 
   handleDeleteNote, setSidebarOpen, isSaving, toggleMarkdownTodo 
 }) => {
+  const textareaRef = useRef(null);
+
+  const insertText = (before, after = '') => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const text = el.value;
+    const selected = text.substring(start, end);
+    const newText = text.substring(0, start) + before + selected + after + text.substring(end);
+    handleUpdateActiveNote({ content: newText });
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start + before.length, end + before.length);
+    }, 0);
+  };
+
+  const wordCount = activeNote?.content ? activeNote.content.split(/\s+/).filter(w => w.length > 0).length : 0;
+  const readingTime = Math.ceil(wordCount / 200) || 1;
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="view-container">
       <header className="editor-header">
@@ -56,12 +76,20 @@ const Editor = ({
       <div className="editor-body">
         {activeNote ? (
           <>
-            <div className="editor-pane">
+            <div className="editor-pane" style={{flexDirection: 'column', padding: '1.5rem 3rem'}}>
+              <div style={{display: 'flex', gap: '10px', marginBottom: '1rem'}}>
+                <button className="btn-icon" style={{width: 36, height: 36}} onClick={() => insertText('**', '**')} title="Bold"><FontAwesomeIcon icon={faBold} size="sm" /></button>
+                <button className="btn-icon" style={{width: 36, height: 36}} onClick={() => insertText('_', '_')} title="Italic"><FontAwesomeIcon icon={faItalic} size="sm" /></button>
+                <button className="btn-icon" style={{width: 36, height: 36}} onClick={() => insertText('`', '`')} title="Code"><FontAwesomeIcon icon={faCode} size="sm" /></button>
+                <button className="btn-icon" style={{width: 36, height: 36}} onClick={() => insertText('[', '](url)')} title="Link"><FontAwesomeIcon icon={faLink} size="sm" /></button>
+              </div>
               <textarea 
+                ref={textareaRef}
                 className="markdown-editor" 
                 value={activeNote.content} 
                 onChange={(e) => handleUpdateActiveNote({ content: e.target.value })} 
                 placeholder="Start writing..." 
+                style={{flex: 1}}
               />
             </div>
             <div className="preview-pane">
@@ -100,7 +128,10 @@ const Editor = ({
             <div className={`save-dot ${isSaving ? 'saving' : ''}`} /> 
             {isSaving ? 'Saving...' : 'Synced'}
           </div>
-          <div>{activeNote.content?.length || 0} characters</div>
+          <div style={{display:'flex', gap:'15px'}}>
+            <span>{wordCount} words</span>
+            <span>{readingTime} min read</span>
+          </div>
         </footer>
       )}
     </motion.div>

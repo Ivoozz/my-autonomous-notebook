@@ -55,20 +55,23 @@ app.get('/api/todos', authenticate, (req, res) => {
 });
 
 app.post('/api/todos', authenticate, (req, res) => {
-  const { task } = req.body;
+  const { task, dueDate, priority } = req.body;
   if (!task) return res.status(400).json({ error: 'Task is required' });
 
-  const newTodo = { id: nextTodoId++, task, completed: false };
+  const newTodo = { id: nextTodoId++, task, completed: false, dueDate: dueDate || null, priority: priority || 'Medium' };
   todos.push(newTodo);
   res.status(201).json(newTodo);
 });
 
 app.put('/api/todos/:id', authenticate, (req, res) => {
   const { id } = req.params;
-  const { completed } = req.body;
+  const { task, completed, dueDate, priority } = req.body;
   const todo = todos.find(t => t.id === parseInt(id));
   if (!todo) return res.status(404).json({ error: 'Todo not found' });
   if (typeof completed === 'boolean') todo.completed = completed;
+  if (task !== undefined) todo.task = task;
+  if (dueDate !== undefined) todo.dueDate = dueDate;
+  if (priority !== undefined) todo.priority = priority;
   res.json(todo);
 });
 
