@@ -19,6 +19,10 @@ REPO_URL="https://github.com/Ivoozz/my-autonomous-notebook.git"
 if [ ! -d "$INSTALL_DIR" ]; then
     echo "Cloning repository to $INSTALL_DIR..."
     git clone "$REPO_URL" "$INSTALL_DIR"
+else
+    echo "Directory $INSTALL_DIR already exists. Pulling latest changes..."
+    cd "$INSTALL_DIR"
+    git pull || echo "Not a git repository or pull failed, proceeding with existing files."
 fi
 
 cd "$INSTALL_DIR"
@@ -27,7 +31,9 @@ cd "$INSTALL_DIR"
 echo ""
 echo "--- Security Setup ---"
 if [ ! -f /etc/nginx/.htpasswd ]; then
-    read -p "Enter username for site access: " NOTEBOOK_USER
+    # When running via curl | bash, we need to read from /dev/tty for user input
+    echo "Enter username for site access: "
+    read -p "> " NOTEBOOK_USER < /dev/tty
     htpasswd -c /etc/nginx/.htpasswd "$NOTEBOOK_USER"
 else
     echo "Nginx password file already exists. Skipping user creation."
@@ -36,21 +42,30 @@ fi
 
 # 4. Setup Backend
 echo "Setting up backend..."
-cd backend
-npm install
-# Simple systemd service for backend (optional, running in background for now)
-# We use pkill to stop any existing instance before restarting
-pkill -f "node index.js" || true
-nohup node index.js > backend.log 2>&1 &
-echo "Backend started in background (PID: $!)"
-cd ..
+if [ -d "backend" ]; then
+    cd backend
+    npm install
+    # pkill -f to ensure we don't have multiple instances
+    pkill -f "node index.js" || true
+    nohup node index.js > backend.log 2>&1 &
+    echo "Backend started in background (PID: $!)"
+    cd ..
+else
+    echo "Error: backend directory not found in $(pwd)"
+    exit 1
+fi
 
 # 5. Setup Frontend
 echo "Building frontend..."
-cd frontend
-npm install
-npm run build
-cd ..
+if [ -d "frontend" ]; then
+    cd frontend
+    npm install
+    npm run build
+    cd ..
+else
+    echo "Error: frontend directory not found in $(pwd)"
+    exit 1
+fi
 
 # 6. Configure Nginx
 echo "Configuring Nginx..."
@@ -89,7 +104,7 @@ chmod -R 755 "$INSTALL_DIR"
 
 # 7. Restart Nginx
 echo "Restarting Nginx..."
-systemctl restart nginx || service nginx restart
+systemctl restart nginx || service nginx restart || true
 
 echo ""
 echo "--- Installation Complete! ---"
