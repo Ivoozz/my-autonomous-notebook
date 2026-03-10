@@ -134,8 +134,9 @@ function App() {
   return (
     <div className="app-container">
       <div className="bg-blobs">
-        <div className="blob" style={{ top: '-10%', left: '10%' }} />
-        <div className="blob" style={{ bottom: '10%', right: '10%', opacity: 0.3 }} />
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
       </div>
 
       <Sidebar 

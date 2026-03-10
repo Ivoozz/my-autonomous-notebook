@@ -22,15 +22,41 @@
 }
 
 body.light-mode {
-  --bg-color: #f8fafc;
-  --glass-bg: rgba(255, 255, 255, 0.5);
-  --glass-border: rgba(0, 0, 0, 0.05);
-  --glass-highlight: rgba(255, 255, 255, 0.8);
-  --text-color: #0f172a;
-  --text-dim: rgba(15, 23, 42, 0.5);
-  --card-bg: rgba(255, 255, 255, 0.6);
-  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --bg-color: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.2);
+  --glass-highlight: rgba(255, 255, 255, 1);
+  --text-color: #000000;
+  --text-dim: #333333;
+  --card-bg: #ffffff;
+  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .sidebar-header h2,
+body.light-mode .title-input,
+body.light-mode .btn-icon,
+body.light-mode .nav-item,
+body.light-mode .note-title-small,
+body.light-mode .note-meta,
+body.light-mode .markdown-editor,
+body.light-mode .preview-pane,
+body.light-mode .date-input-ghost,
+body.light-mode .react-calendar__navigation button,
+body.light-mode .react-calendar__tile {
+  color: #000000 !important;
+}
+
+body.light-mode .btn-icon,
+body.light-mode .date-input-ghost {
+  background: #f0f0f0;
+  border-color: #cccccc;
+}
+
+body.light-mode .search-input {
+  background: #f5f5f5;
+  color: #000000;
+  border-color: #cccccc;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -309,12 +335,30 @@ body.light-mode .sidebar-header h2 { background: linear-gradient(135deg, #000 0%
 .login-btn:active { transform: translateY(0) scale(0.98); }
 
 /* --- Settings & Planner --- */
-.settings-container, .calendar-view { padding: 3rem; overflow-y: auto; height: 100%; display: flex; flex-direction: column; align-items: center; width: 100%; }
-.settings-card, .calendar-container {
+.settings-container { padding: 3rem; overflow-y: auto; height: 100%; display: flex; flex-direction: column; align-items: center; width: 100%; }
+.settings-card {
   width: 95%; max-width: 1400px; background: var(--glass-bg);
   padding: 3rem; border-radius: var(--radius-lg); border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--blur-md)); box-shadow: var(--shadow-lg);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.calendar-view {
+  display: flex; gap: 2rem; padding: 3rem; height: 100%; width: 100%; overflow: hidden;
+}
+
+.calendar-container {
+  flex: 2; background: var(--glass-bg); padding: 2.5rem;
+  border-radius: var(--radius-lg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--blur-md)); box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; height: 100%;
+}
+
+.day-notes-pane {
+  flex: 1; background: var(--glass-bg); padding: 2.5rem;
+  border-radius: var(--radius-lg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--blur-md)); box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; height: 100%; overflow-y: auto;
 }
 
 .color-circle {
@@ -411,6 +455,19 @@ body.light-mode .sidebar-header h2 {
 body.light-mode .react-calendar__tile { color: #1a1a1a !important; }
 body.light-mode .react-calendar__navigation button { color: #1a1a1a !important; }
 
+body.light-mode svg {
+  color: #000000 !important;
+  fill: currentColor;
+}
+
+body.light-mode .btn-icon svg {
+  color: inherit !important;
+}
+
+body.light-mode .btn-icon.active svg {
+  color: #ffffff !important;
+}
+
 /* --- Checkbox Styling (Markdown) --- */
 .preview-pane input[type="checkbox"] {
   appearance: none; -webkit-appearance: none;
@@ -450,8 +507,9 @@ body.light-mode .react-calendar__navigation button { color: #1a1a1a !important; 
   .editor-pane { border-right: none; border-bottom: 1px solid var(--glass-border); height: 50%; padding: 1.5rem; }
   .preview-pane { height: 50%; padding: 1.5rem; font-size: 1rem; }
   .editor-footer { padding: 1rem 1.5rem; }
-  .settings-container, .calendar-view { padding: 1.5rem; }
-  .settings-card, .calendar-container { padding: 1.5rem; }
+  .settings-container, .calendar-view { padding: 1.5rem; flex-direction: column; overflow-y: auto; }
+  .calendar-view { gap: 1rem; }
+  .settings-card, .calendar-container, .day-notes-pane { padding: 1.5rem; flex: none; width: 100%; height: auto; }
 }
 
 @media (max-width: 480px) {

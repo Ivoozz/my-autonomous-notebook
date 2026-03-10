@@ -7,7 +7,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const Planner = ({ calendarDate, setCalendarDate, notes, onNoteClick, onCreateNote }) => {
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="calendar-view" style={{height:'100%', overflowY:'auto'}}>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="calendar-view">
       <div className="calendar-container">
         <Calendar 
           onChange={setCalendarDate} 
@@ -17,9 +17,9 @@ const Planner = ({ calendarDate, setCalendarDate, notes, onNoteClick, onCreateNo
           } 
         />
       </div>
-      <div className="day-notes-list" style={{padding:'1.5rem', width:'100%', maxWidth:'600px'}}>
+      <div className="day-notes-pane">
         <h2 style={{marginBottom:'1rem', fontWeight:800}}>{format(calendarDate, 'MMMM d, yyyy')}</h2>
-        <div style={{display:'flex', flexDirection:'column', gap:'10px'}}>
+        <div style={{display:'flex', flexDirection:'column', gap:'10px', flex: 1}}>
           {notes.filter(n => n.date && isSameDay(parseISO(n.date), calendarDate)).map(n => (
             <div key={n.id} className="note-item active" style={{margin:0}} onClick={() => onNoteClick(n)}>
               {n.title || 'Untitled'}
