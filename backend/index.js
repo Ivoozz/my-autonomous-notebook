@@ -20,6 +20,8 @@ const authenticate = (req, res, next) => {
   }
 };
 
+// No changes needed to backend for real-time localStorage settings,
+// but ensuring the /api/login and /api/notes remain robust.
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   if (password === AUTH_PASSWORD) {
