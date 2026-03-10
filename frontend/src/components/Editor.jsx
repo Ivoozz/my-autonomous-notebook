@@ -98,10 +98,13 @@ const Editor = ({
                 value={activeNote.content} 
                 onChange={(e) => handleUpdateActiveNote({ content: e.target.value })} 
                 onKeyDown={(e) => {
-                  if ((e.ctrlKey || e.metaKey) && e.key === 'b') { e.preventDefault(); insertText('**', '**'); }
-                  if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); insertText('_', '_'); }
-                  if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); insertText('`', '`'); }
-                  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); insertText('[', '](url)'); }
+                  const key = e.key.toLowerCase();
+                  if ((e.ctrlKey || e.metaKey)) {
+                    if (key === 'b') { e.preventDefault(); insertText('**', '**'); }
+                    if (key === 'i') { e.preventDefault(); insertText('_', '_'); }
+                    if (key === 'e') { e.preventDefault(); insertText('`', '`'); }
+                    if (key === 'k') { e.preventDefault(); insertText('[', '](url)'); }
+                  }
                 }}
                 placeholder="Start writing..." 
                 style={{flex: 1}}
