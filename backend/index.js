@@ -41,8 +41,42 @@ let notes = [
   {
     id: 1,
     title: '🚀 Welcome to Notebook Pro',
-    content: '# Welcome to your New Notebook!\n\nThis app is designed for speed, beauty, and organization.\n\n### ⌨️ Keyboard Shortcuts\nStay productive with these quick actions:\n- **Ctrl + N**: Create a new note instantly\n- **Ctrl + S**: Manual sync (though we auto-save!)\n- **Ctrl + P**: Toggle Pin status\n- **Ctrl + F**: Focus Search bar\n- **Delete**: Remove active note\n- **Ctrl + Alt + 1-5**: Quick-switch between tabs\n\n### ✍️ Editor Shortcuts\n- **Ctrl + B**: Bold text\n- **Ctrl + I**: Italicize text\n- **Ctrl + E**: Inline code\n- **Ctrl + K**: Insert link\n\n### 💡 Key Features\n1. **Glassmorphism UI**: High-end modern design with blur effects.\n2. **IMAP Integration**: Connect your email inbox directly.\n3. **Calendar**: Associate notes with specific dates for planning.\n4. **Task Manager**: Keep track of tasks with priority and due dates.\n5. **Pomodoro**: Built-in timer for focused sessions.',
+    content: `# Welcome to Notebook Pro
+
+This is your ultimate workspace for notes, planning, and communication.
+
+### ⌨️ Global Shortcuts
+- **Ctrl + N**: New Note
+- **Ctrl + S**: Manual Sync
+- **Ctrl + P**: Toggle Pin
+- **Ctrl + F**: Focus Search
+- **Delete**: Delete Active Note
+- **Ctrl + Alt + 1-5**: Switch Tabs
+
+### ✍️ Editor Shortcuts
+- **Ctrl + B**: Bold text
+- **Ctrl + I**: Italicize text
+- **Ctrl + E**: Inline code
+- **Ctrl + K**: Insert link
+
+### 📝 Markdown Guide
+- **# Header 1** to **###### Header 6**
+- **Bold**: **text**
+- *Italic*: *text*
+- \`Inline Code\`
+- [Link](url)
+- - [ ] Task List
+- > Blockquotes
+
+### 📂 Folders & Organization
+- Group your notes by adding a **Folder** name in the editor.
+- Use the **Filter** icon in the sidebar to sort.
+
+### 📧 Email & Integration
+- Configure **IMAP/SMTP** in Settings.
+- Export emails to **Tasks** or **Notes**!`,
     category: 'Guide',
+    folder: 'Onboarding',
     isPinned: true,
     date: new Date().toISOString(),
     createdAt: new Date().toISOString(),
@@ -89,7 +123,7 @@ app.get('/api/notes', authenticate, (req, res) => {
 });
 
 app.post('/api/notes', authenticate, (req, res) => {
-  const { title, content, category, isPinned, date } = req.body;
+  const { title, content, category, folder, isPinned, date } = req.body;
   if (!title) return res.status(400).json({ error: 'Title is required' });
 
   const newNote = {
@@ -97,6 +131,7 @@ app.post('/api/notes', authenticate, (req, res) => {
     title,
     content: content || '',
     category: category || 'General',
+    folder: folder || 'Uncategorized',
     isPinned: isPinned || false,
     date: date || null,
     createdAt: new Date().toISOString(),
@@ -109,7 +144,7 @@ app.post('/api/notes', authenticate, (req, res) => {
 
 app.put('/api/notes/:id', authenticate, (req, res) => {
   const { id } = req.params;
-  const { title, content, category, isPinned, date } = req.body;
+  const { title, content, category, folder, isPinned, date } = req.body;
   const noteIndex = notes.findIndex(n => n.id === parseInt(id));
 
   if (noteIndex === -1) return res.status(404).json({ error: 'Note not found' });
@@ -119,6 +154,7 @@ app.put('/api/notes/:id', authenticate, (req, res) => {
     title: title || notes[noteIndex].title,
     content: content !== undefined ? content : notes[noteIndex].content,
     category: category !== undefined ? category : notes[noteIndex].category,
+    folder: folder !== undefined ? folder : notes[noteIndex].folder,
     isPinned: isPinned !== undefined ? isPinned : notes[noteIndex].isPinned,
     date: date !== undefined ? date : notes[noteIndex].date,
     updatedAt: new Date().toISOString()

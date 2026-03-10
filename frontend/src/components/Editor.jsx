@@ -46,9 +46,18 @@ const Editor = ({
             <div style={{display:'flex', gap:'8px', alignItems:'center'}}>
               <input 
                 type="text"
+                placeholder="Folder"
+                className="date-input-ghost"
+                style={{width: '100px', fontSize: '0.8rem'}}
+                value={activeNote.folder || ''}
+                onChange={(e) => handleUpdateActiveNote({ folder: e.target.value })}
+              />
+
+              <input 
+                type="text"
                 placeholder="Category"
                 className="date-input-ghost"
-                style={{width: '120px', fontSize: '0.8rem'}}
+                style={{width: '100px', fontSize: '0.8rem'}}
                 value={activeNote.category || ''}
                 onChange={(e) => handleUpdateActiveNote({ category: e.target.value })}
               />

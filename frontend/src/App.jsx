@@ -27,6 +27,7 @@ function App() {
   const [theme, setTheme] = useState(localStorage.getItem('notebook_theme') || 'dark')
   const [accentColor, setAccentColor] = useState(localStorage.getItem('notebook_accent') || '#7c4dff')
   const [bgBlobs, setBgBlobs] = useState(localStorage.getItem('notebook_blobs') !== 'false')
+  const [showHelp, setShowHelp] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [todos, setTodos] = useState([])
@@ -212,16 +213,18 @@ function App() {
 
   return (
     <div className="app-container">
-      {bgBlobs && (
-        <div className="bg-blobs">
-          <div className="blob blob-1" />
-          <div className="blob blob-2" />
-          <div className="blob blob-3" />
-        </div>
-      )}
+      <AnimatePresence>
+        {bgBlobs && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="bg-blobs">
+            <div className="blob blob-1" />
+            <div className="blob blob-2" />
+            <div className="blob blob-3" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Sidebar 
-        notebookTitle={notebookTitle} 
+        notebookTitle={notebookTitle} setShowHelp={setShowHelp}
         notes={notes} activeNoteId={activeNote?.id} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
         onNoteClick={(note) => { setActiveNote(note); setActiveTab('notes'); }}
         onCreateNote={handleCreateNote} activeTab={activeTab} setActiveTab={setActiveTab}
@@ -297,6 +300,44 @@ function App() {
           )}
         </AnimatePresence>
       </main>
+
+      <AnimatePresence>
+        {showHelp && (
+          <div className="help-modal-overlay" onClick={() => setShowHelp(false)}>
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="help-content" onClick={e => e.stopPropagation()}
+            >
+              <h1 style={{marginBottom:'2rem', fontSize:'2.5rem', fontWeight:900, letterSpacing:'-2px'}}>Help & Guide</h1>
+              <div style={{display:'grid', gap:'2rem', gridTemplateColumns:'repeat(auto-fit, minmax(250px, 1fr))'}}>
+                <div>
+                  <h3 style={{color:'var(--accent-color)', marginBottom:'1rem'}}>Keyboard Shortcuts</h3>
+                  <ul style={{listStyle:'none', padding:0, fontSize:'0.9rem', lineHeight:2}}>
+                    <li><strong>Ctrl + N</strong>: New Note</li>
+                    <li><strong>Ctrl + S</strong>: Save/Sync</li>
+                    <li><strong>Ctrl + P</strong>: Pin Note</li>
+                    <li><strong>Ctrl + F</strong>: Focus Search</li>
+                    <li><strong>Delete</strong>: Delete Note</li>
+                    <li><strong>Ctrl + Alt + 1-5</strong>: Tabs</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 style={{color:'var(--accent-color)', marginBottom:'1rem'}}>Markdown Support</h3>
+                  <ul style={{listStyle:'none', padding:0, fontSize:'0.9rem', lineHeight:2}}>
+                    <li><strong># Title</strong>: Header 1</li>
+                    <li><strong>**Bold**</strong>: Bold Text</li>
+                    <li><strong>*Italic*</strong>: Italic Text</li>
+                    <li><strong>- [ ] task</strong>: Checklist</li>
+                    <li><strong>`code`</strong>: Inline Code</li>
+                    <li><strong>&gt; quote</strong>: Blockquote</li>
+                  </ul>
+                </div>
+              </div>
+              <button className="login-btn" style={{marginTop:'2rem'}} onClick={() => setShowHelp(false)}>Close Help</button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

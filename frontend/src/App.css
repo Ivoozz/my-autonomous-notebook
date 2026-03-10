@@ -127,20 +127,43 @@ body.light-mode ::-webkit-scrollbar-thumb {
   width: 100%;
   position: relative;
   background-color: var(--bg-color);
+  z-index: 1;
 }
 
 .bg-blobs {
   position: fixed; inset: -20%; z-index: -1; 
-  filter: blur(120px); opacity: 0.6; pointer-events: none;
+  filter: blur(120px); opacity: 0.4; pointer-events: none;
   display: flex; justify-content: center; align-items: center;
   mix-blend-mode: screen;
+  background: var(--bg-color);
 }
+body.light-mode .bg-blobs { mix-blend-mode: multiply; opacity: 0.15; }
 
 .blob {
   position: absolute;
   width: 60vw; height: 60vw;
   border-radius: 50%;
   animation: float 30s infinite ease-in-out alternate;
+}
+
+/* ... existing blobs ... */
+
+.help-modal-overlay {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center; padding: 2rem;
+}
+
+.help-content {
+  width: 100%; max-width: 800px; max-height: 80vh; overflow-y: auto;
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  padding: 3rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+}
+
+.folder-header {
+  padding: 0.5rem 1.5rem; font-size: 0.75rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--accent-color);
+  opacity: 0.8; margin-top: 1rem; display: flex; align-items: center; gap: 8px;
 }
 
 .blob-1 { background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%); top: 0%; left: 0%; animation-delay: 0s; }
