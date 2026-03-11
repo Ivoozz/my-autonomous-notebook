@@ -68,19 +68,25 @@ Notebook Pro is an autonomous, fully-featured productivity workspace designed fo
 
 ### Running the Application
 
-**Start the Backend:**
-```bash
-cd backend
-npm start
-```
+**Production (Nginx Proxy):**
+The application is typically served via Nginx on **Port 80**.
+- **Frontend:** Accessible at `http://your-server-ip/`
+- **Backend API:** Proxied to `http://localhost:5000/api/`
 
-**Start the Frontend:**
-```bash
-cd frontend
-npm run dev
-```
+**Development:**
+If running manually for development:
+1. **Start the Backend:**
+   ```bash
+   cd backend
+   npm start # Runs on port 5000
+   ```
+2. **Start the Frontend:**
+   ```bash
+   cd frontend
+   npm run dev # Typically runs on port 5173
+   ```
 
-Visit `http://localhost:5173` to access your workspace!
+Visit `http://localhost:80` (or your server's IP) to access your workspace!
 
 ## ⚙️ Maintenance Scripts
 The project includes several automation scripts for UI and functionality updates:
