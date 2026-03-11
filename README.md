@@ -1,31 +1,35 @@
-# Notebook Pro
+# Notebook Pro 🚀
 
-Notebook Pro is an autonomous, fully-featured productivity workspace combining Markdown notes, task management, calendar planning, and email integration into a single, cohesive, and visually stunning interface.
+Notebook Pro is an autonomous, fully-featured productivity workspace designed for the modern professional. It combines Markdown notes, advanced task management, calendar planning, a secure password vault, and deep email integration into a single, visually stunning glassmorphic interface.
 
-## 🚀 Features
+## ✨ Features
 
-- **📝 Advanced Markdown Editor:** Full markdown support, syntax highlighting, task lists, and reading time estimation.
-- **📅 Daily Planner & Calendar:** Visually track notes and tasks against a calendar view.
-- **📊 Kanban Board & Task List:** Manage tasks with a flexible List view or a Kanban Board (To Do, In Progress, Done).
-- **📧 Email Integration:** Connect via IMAP/SMTP to read, reply, and convert emails directly into notes or tasks.
-- **🎨 Highly Customizable:** Beautiful glassmorphism UI with light/dark modes, custom accent colors, and an animated background.
-- **📱 Responsive Design:** Perfect for both desktop and mobile use, featuring a bottom navigation bar on mobile devices.
-- **⌨️ Keyboard Shortcuts:** Navigate and edit efficiently without leaving your keyboard.
+- **📝 Advanced Markdown Editor:** Full-featured editor with real-time preview, syntax highlighting, task list support, and reading time estimation.
+- **📅 Daily Planner & Calendar:** Integrated calendar view to schedule and track notes and tasks chronologically using `react-calendar`.
+- **📊 Dynamic Task Management:** Flexible task organization with both List and Kanban board (To Do, In Progress, Done) views.
+- **🔐 Secure Password Vault:** A dedicated, encrypted space to store and manage your credentials safely within the workspace.
+- **📧 Native Email Client:** Direct IMAP/SMTP integration allows you to read, reply, and manage emails without leaving the app.
+- **🎨 Glassmorphic UI:** A beautiful, modern interface powered by Framer Motion animations, Lucide icons, and FontAwesome.
+- **📱 Fully Responsive:** Seamless experience across desktop and mobile devices, including a dedicated mobile navigation system.
+- **⚡ Performance & Security:** Optimized with React 19, Vite 7, and a hardened Express 5 backend featuring rate limiting and Helmet protection.
 
 ## 🛠 Tech Stack
 
 ### Frontend
-- React 19 + Vite
-- Framer Motion (Animations)
-- FontAwesome (Icons)
-- React Markdown + Remark GFM
-- Date-fns (Date parsing)
+- **React 19 + Vite 7** (Core Framework & Build Tool)
+- **Framer Motion** (Smooth UI Transitions & Animations)
+- **Lucide React & FontAwesome** (Iconography)
+- **React Markdown + Remark GFM** (Note Rendering)
+- **React Calendar** (Scheduling Interface)
+- **Crypto-JS** (Client-side Security)
+- **Date-fns** (Date Utility)
 
 ### Backend
-- Node.js & Express
-- ImapFlow & Mailparser (IMAP Email handling)
-- Nodemailer (SMTP Email sending)
-- CORS & dotenv
+- **Node.js & Express 5** (Server-side Logic)
+- **ImapFlow & Mailparser** (IMAP Email handling)
+- **Nodemailer** (SMTP Email sending)
+- **Bcryptjs** (Password hashing)
+- **Helmet & Express Rate Limit** (Security Middleware)
 
 ## 🚦 Getting Started
 
@@ -37,8 +41,8 @@ Notebook Pro is an autonomous, fully-featured productivity workspace combining M
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Ivoozz/my-autonomous-notebook.git
-   cd my-autonomous-notebook
+   git clone https://github.com/Ivoozz/my-autonomous-app.git
+   cd my-autonomous-app
    ```
 
 2. **Install Backend Dependencies:**
@@ -53,17 +57,16 @@ Notebook Pro is an autonomous, fully-featured productivity workspace combining M
    npm install
    ```
 
-4. **Environment Variables:**
+4. **Environment Configuration:**
    Create a `.env` file in the `backend` directory:
    ```env
    PORT=5000
    AUTH_PASSWORD=your_secure_password
    VALID_TOKEN=your_secure_token
+   # Add your IMAP/SMTP credentials here for email integration
    ```
 
-### Running the App
-
-You can run the frontend and backend concurrently.
+### Running the Application
 
 **Start the Backend:**
 ```bash
@@ -77,13 +80,17 @@ cd frontend
 npm run dev
 ```
 
-Visit `http://localhost:5173` to access Notebook Pro!
+Visit `http://localhost:5173` to access your workspace!
 
-## 🔐 Authentication & Security
-The app uses a simple token-based authentication system. Enter the `AUTH_PASSWORD` defined in your `.env` on the login screen to access your vault.
+## ⚙️ Maintenance Scripts
+The project includes several automation scripts for UI and functionality updates:
+- `fix_sidebar.py`: Resolves common sidebar layout issues.
+- `update_app.py`: Main orchestration script for application-wide updates.
+- `update_css.py`: Automated styling and theme adjustments.
+- `update_sidebar.py`: Updates sidebar items and navigation structure.
 
 ## 🤝 Contributing
-Contributions are welcome! Feel free to open issues or submit pull requests.
+Contributions are welcome! If you have suggestions or find bugs, please open an issue or submit a pull request.
 
 ## 📄 License
 This project is licensed under the MIT License.
